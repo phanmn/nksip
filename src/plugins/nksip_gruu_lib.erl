@@ -215,12 +215,7 @@ decrypt(Bin) ->
 
 
 do_encrypt(Key, Bin) ->
-    crypto:block_encrypt(aes_cfb128, Key, ?AES_IV, Bin).
+    crypto:crypto_one_time(aes_cfb128, Key, ?AES_IV, Bin, []).
 
 do_decrypt(Key, Dec) ->
-    crypto:block_decrypt(aes_cfb128, Key, ?AES_IV, Dec).
-
-
-
-
-
+    crypto:crypto_one_time(aes_cfb128, Key, ?AES_IV, Dec, []).
