@@ -148,7 +148,7 @@ conn_init(NkPort) ->
     #config{debug=DebugList} = nksip_config:srv_config(SrvId),
     Debug = lists:member(protocol, DebugList),
     erlang:put(nksip_debug, Debug),
-    ?SIP_DEBUG("connection started (~p)", [self()]),
+    ?D("connection started (~p)", [self()]),
     {ok, State}.
 
 
@@ -238,7 +238,7 @@ conn_handle_call(get_refresh, From, _NkPort, State) ->
 
 
 conn_handle_call(Msg, _From, _NkPort, State) ->
-    lager:error("Module ~p received unexpected call: ~p", [?MODULE, Msg]),
+    ?LOG_ERROR("Module ~p received unexpected call: ~p", [?MODULE, Msg]),
     {ok, State}.
 
 
@@ -257,7 +257,7 @@ conn_handle_cast(stop_refresh, _NkPort, State) ->
     {ok, State2};
 
 conn_handle_cast(Msg, _NkPort, State) ->
-    lager:error("Module ~p received unexpected cast: ~p", [?MODULE, Msg]),
+    ?LOG_ERROR("Module ~p received unexpected cast: ~p", [?MODULE, Msg]),
     {ok, State}.
 
 
@@ -269,7 +269,7 @@ conn_handle_info({timeout, _, refresh}, #nkport{transp=udp}=NkPort, State) ->
     {ok, {_, udp, Ip, Port}} = nkpacket:get_remote(NkPort),
     case get_listening(NkPort) of
         {ok, Pid} ->
-            ?SIP_DEBUG("transport sending STUN", []),
+            ?D("transport sending STUN", []),
             nkpacket_transport_udp:send_stun_async(Pid, Ip, Port),
             {ok, State#conn_state{refresh_timer=undefined}};
         false ->
@@ -277,7 +277,7 @@ conn_handle_info({timeout, _, refresh}, #nkport{transp=udp}=NkPort, State) ->
     end;
 
 conn_handle_info({timeout, _, refresh}, NkPort, State) ->
-    ?SIP_DEBUG("transport sending refresh", []),
+    ?D("transport sending refresh", []),
     case do_send(<<"\r\n\r\n">>, NkPort) of
         ok -> 
             {ok, State#conn_state{in_refresh=true, refresh_timer=undefined}};
@@ -292,7 +292,7 @@ conn_handle_info({stun, {ok, StunIp, StunPort}}, _NkPort, State) ->
         refresh_time = RefreshTime,
         refresh_notify = RefreshNotify
     } = State,
-    ?SIP_DEBUG("transport received STUN", []),
+    ?D("transport received STUN", []),
     case 
         {NatIp, NatPort} == {undefined, undefined} orelse
         {NatIp, NatPort} == {StunIp, StunPort}
@@ -300,7 +300,7 @@ conn_handle_info({stun, {ok, StunIp, StunPort}}, _NkPort, State) ->
         true ->
             case RefreshTime of
                 undefined ->
-                    lager:warning("STUN UNDEFINED: ~p", [self()]);
+                    ?LOG_WARNING("STUN UNDEFINED: ~p", [self()]);
                 _ ->
                     ok
             end,
@@ -320,7 +320,7 @@ conn_handle_info({stun, error}, _NkPort, State) ->
     {stop, stun_error, State};
 
 conn_handle_info(Msg, _NkPort, State) ->
-    lager:warning("Module ~p received unexpected info: ~p", [?MODULE, Msg]),
+    ?LOG_WARNING("Module ~p received unexpected info: ~p", [?MODULE, Msg]),
     {ok, State}.
 
 
@@ -352,7 +352,7 @@ do_parse(<<>>, _NkPort, State) ->
 %% For TCP and UDP, we send a \r\n\r\n, remote must reply with \r\n
 do_parse(<<"\r\n\r\n", Rest/binary>>, #nkport{transp=Transp}=NkPort, State)
          when Transp==tcp; Transp==udp; Transp==tls; Transp==sctp ->
-    ?SIP_DEBUG("transport responding to refresh", []),
+    ?D("transport responding to refresh", []),
     case do_send(<<"\r\n">>, NkPort) of
         ok -> 
             do_parse(Rest, NkPort, State);
@@ -373,7 +373,7 @@ do_parse(<<"\r\n", Rest/binary>>, #nkport{transp=Transp}=NkPort, State)
     lists:foreach(fun({Ref, Pid}) -> Pid ! Ref end, RefreshNotify),
     RefreshTimer = case InRefresh of
         true -> 
-            ?SIP_DEBUG("transport received refresh, next in ~p secs",
+            ?D("transport received refresh, next in ~p secs",
                         [round(RefreshTime/1000)]),
             erlang:start_timer(RefreshTime, self(), refresh);
         false -> 
@@ -389,7 +389,7 @@ do_parse(<<"\r\n", Rest/binary>>, #nkport{transp=Transp}=NkPort, State)
 
 do_parse(Data, #nkport{transp=Transp}, _State)
         when (Transp==tcp orelse Transp==tls) andalso byte_size(Data) > ?MAX_MSG ->
-    ?SIP_LOG(warning, "dropping TCP/TLS closing because of max_buffer", []),
+    ?W("dropping TCP/TLS closing because of max_buffer", []),
     {error, msg_too_large};
 
 do_parse(Data, #nkport{transp=Transp}=NkPort, State) ->
@@ -398,7 +398,7 @@ do_parse(Data, #nkport{transp=Transp}=NkPort, State) ->
         nomatch when Transp==tcp; Transp==tls ->
             {ok, State#conn_state{buffer=Data}};
         nomatch ->
-            ?SIP_LOG(notice, "ignoring partial ~p msg: ~p", [Transp, Data]),
+            ?N("ignoring partial ~p msg: ~p", [Transp, Data]),
             {error, parse_error};
         {Pos, 4} ->
             do_parse(NkPort, Data, Pos+4, State)
@@ -417,14 +417,13 @@ do_parse(#nkport{transp=Transp}=NkPort, Data, Pos, State) ->
                 ok -> 
                     do_parse(Rest, NkPort, State);
                 {error, Error} -> 
-                    ?SIP_LOG(notice,
-                            "error processing ~p request: ~p", [Transp, Error]),
+                    ?N("error processing ~p request: ~p", [Transp, Error]),
                     {error, Error}
             end;
         partial when Transp==tcp; Transp==tls ->
             {ok, State#conn_state{buffer=Data}};
         partial ->
-            ?SIP_LOG(notice, "ignoring partial msg ~p: ~p", [Transp, Data]),
+            ?N("ignoring partial msg ~p: ~p", [Transp, Data]),
             {ok, State};
         {error, Error} ->
             reply_error(Data, Error, NkPort, State),
@@ -482,7 +481,7 @@ extract(Transp, Data, Pos) ->
     ok.
 
 reply_error(Data, Msg, NkPort, _State) ->
-    ?SIP_LOG(notice, "error parsing request: ~s", [Msg]),
+    ?N("error parsing request: ~s", [Msg]),
     case nksip_parse_sipmsg:parse(Data) of
         {ok, {req, _, _}, Headers, _} ->
             Resp = nksip_unparse:response(Headers, 400, Msg),

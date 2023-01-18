@@ -47,7 +47,7 @@ get_handle(Term) ->
         <<"R_", _/binary>> = Handle ->
             {ok, Handle};
         _ ->
-            lager:error("NKLOG IVALID HANDLE ~p", [Term]),
+            ?LOG_ERROR("NKLOG IVALID HANDLE ~p", [Term]),
             error(invalid_request)
     end.
 

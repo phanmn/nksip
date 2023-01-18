@@ -85,7 +85,7 @@ request(#sipmsg{class={req, 'PUBLISH'}}=Req) ->
                 not_found ->    
                     conditional_request_failed;
                 {error, Error} ->
-                    ?SIP_LOG(warning, "Error calling callback: ~p", [Error]),
+                    ?W("Error calling callback: ~p", [Error]),
                     {internal_error, <<"Callback Invalid Response">>}
             end;
         _ ->

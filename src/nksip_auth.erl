@@ -26,7 +26,7 @@
 -export([authorize_data/2, realms/1, make_ha1/3]).
 -export([make_request/3, make_response/2, get_authentication/2]).
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 
@@ -215,7 +215,6 @@ make_response(Realm, Req) ->
     {ok, {_, _, Ip, _Port}} = nkpacket:get_remote(NkPort),
     Nonce = nklib_util:luid(),
     #config{nonce_timeout=Timeout} = nksip_config:srv_config(SrvId),
-    % lager:error("NKLOG PUT NONCE ~p ~p ~p ~p", [{SrvId, CallId, Nonce, Ip, Port}]),
     % We don't put the port any more, since in an deep chain of proxies,
     % we can start with UDP and switch to TCP in the middle of the process
     %Term = {Ip, Port},
@@ -262,7 +261,7 @@ authorize_data(Req, #call{srv_id=SrvId}=Call) ->
                 false
         end,
         ?CALL_DEBUG("UAS calling get_user_pass(~p, ~p, Req, Call): ~p",
-                    [User, Realm, Reply], Call),
+                    [User, Realm, Reply]),
         Reply
     end,
     get_authentication(Req, PassFun).
@@ -459,7 +458,7 @@ check_auth_header(AuthHeader, Resp, User, Realm, Pass, Req) ->
         nklib_util:get_value(algorithm, AuthHeader, 'MD5') /= 'MD5'
     of
         true ->
-            ?SIP_LOG(notice, "received invalid parameters in Authorization Header: ~p (~s)",
+            ?N("received invalid parameters in Authorization Header: ~p (~s)",
                     [AuthHeader, CallId]),
             invalid;
         false ->
@@ -467,7 +466,6 @@ check_auth_header(AuthHeader, Resp, User, Realm, Pass, Req) ->
             Uri = nklib_util:get_value(uri, AuthHeader),
             Nonce = nklib_util:get_value(nonce, AuthHeader),
             TestTerm = get_nonce(SrvId, CallId, Nonce),
-            % lager:error("NKLOG GET NONCE ~p ~p ~p ~p", [{SrvId, CallId, Nonce}, Found]),
             if
                 TestTerm==not_found ->
                     Opaque = nklib_util:get_value(opaque, AuthHeader),

@@ -52,7 +52,7 @@ process(Req, #call{srv_id=SrvId, call_id=CallId}=Call) ->
                 false ->
                     forbidden;
                 {'EXIT', _Error} ->
-                    ?CALL_LOG(error, "Error calling callback sip_refer/3: ~p", [_Error], Call),
+                    ?CALL_LOG(error, "Error calling callback sip_refer/3: ~p", [_Error]),
                     {internal_error, "Service Error"}
             end;
         _ ->

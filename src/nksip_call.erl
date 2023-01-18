@@ -42,9 +42,6 @@
 -include("nksip_call.hrl").
 
 
--define(LLOG(Type, Txt, Args), lager:Type("NkSIP Call: "++Txt, Args)).
-
-
 %% ===================================================================
 %% Types
 %% ===================================================================
@@ -264,7 +261,7 @@ check_call(#call{times=#call_times{trans=TransTime, dialog=DialogTime}} = Call) 
 -spec check_call_trans(nklib_util:timestamp(), integer(), call()) ->
     [trans()].
 
-check_call_trans(Now, MaxTime, #call{trans=Trans}=Call) ->
+check_call_trans(Now, MaxTime, #call{trans=Trans}) ->
     lists:filter(
         fun(T) ->
             #trans{start=Start} = T,
@@ -272,7 +269,7 @@ check_call_trans(Now, MaxTime, #call{trans=Trans}=Call) ->
                 true ->
                     true;
                 false ->
-                    ?CALL_LOG(error, "removing expired transaction ~p", [T#trans.id], Call),
+                    ?CALL_LOG(error, "removing expired transaction ~p", [T#trans.id]),
                     false
             end
         end,
@@ -283,7 +280,7 @@ check_call_trans(Now, MaxTime, #call{trans=Trans}=Call) ->
 -spec check_call_forks(nklib_util:timestamp(), integer(), call()) ->
     [fork()].
 
-check_call_forks(Now, MaxTime, #call{forks=Forks}=Call) ->
+check_call_forks(Now, MaxTime, #call{forks=Forks}) ->
     lists:filter(
         fun(F) ->
             #fork{start=Start} = F,
@@ -291,7 +288,7 @@ check_call_forks(Now, MaxTime, #call{forks=Forks}=Call) ->
                 true ->
                     true;
                 false ->
-                    ?CALL_LOG(error, "removing expired fork ~p", [F#fork.id], Call),
+                    ?CALL_LOG(error, "removing expired fork ~p", [F#fork.id]),
                     false
             end
         end,
@@ -302,7 +299,7 @@ check_call_forks(Now, MaxTime, #call{forks=Forks}=Call) ->
 -spec check_call_dialogs(nklib_util:timestamp(), integer(), call()) ->
     [nksip:dialog()].
 
-check_call_dialogs(Now, MaxTime, #call{dialogs=Dialogs}=Call) ->
+check_call_dialogs(Now, MaxTime, #call{dialogs=Dialogs}) ->
     lists:filter(
         fun(D) ->
             #dialog{updated=Updated} = D,
@@ -310,7 +307,7 @@ check_call_dialogs(Now, MaxTime, #call{dialogs=Dialogs}=Call) ->
                 true ->
                     true;
                 false ->
-                    ?CALL_LOG(error, "removing expired dialog ~p", [D#dialog.id], Call),
+                    ?CALL_LOG(error, "removing expired dialog ~p", [D#dialog.id]),
                     false
             end
         end,

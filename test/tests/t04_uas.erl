@@ -116,7 +116,7 @@ uas() ->
     [<<"a,b,d">>] = proplists:get_all_values(<<"unsupported">>, Hds6),
 
     % Force invalid response
-    lager:warning("Next warning about a invalid sipreply is expected"),
+    ?LOG_WARNING("Next warning about a invalid sipreply is expected"),
     {ok, 500,  [{reason_phrase, <<"Invalid Service Response">>}]} = 
         nksip_uac:options(uas_test_client1, "sip:127.0.0.1", [
             {add, "x-nk-op", "reply-invalid"}, {get_meta, [reason_phrase]}]),
@@ -150,7 +150,7 @@ auto() ->
 
     ok = tests_util:wait(Ref, [{ping, ping1, true}, {reg, reg1, true}]),
 
-    lager:notice("Next notices about connection error to port 9999 are expected"),
+    ?LOG_NOTICE("Next notices about connection error to port 9999 are expected"),
     {ok, false} = nksip_uac_auto_register:start_ping(uas_test_client1, ping2,
                                             "<sip:127.0.0.1:9999;transport=tcp>",
                                             [{expires, 1}]),
@@ -174,7 +174,7 @@ auto() ->
     ok = nksip_uac_auto_register:stop_register(uas_test_client1, reg1),
     ok = nksip:stop(uas_test_server2),
     timer:sleep(500),
-    lager:notice("Next notice about connection error to port 5080 is expected"),
+    ?LOG_NOTICE("Next notice about connection error to port 5080 is expected"),
     {ok, false} = nksip_uac_auto_register:start_ping(uas_test_client1, ping3,
                                             "<sip:127.0.0.1:5080;transport=tcp>",
                                             [{expires, 1}]),

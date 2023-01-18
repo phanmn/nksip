@@ -112,7 +112,7 @@ srv_handle_info({nksip_uac_auto_outbound_notify, RegId}, _Service,
     #state_ob{regs=RegsOb} = ObState,
     case lists:keytake(RegId, #sipreg_ob.id, RegsOb) of
         {value, RegOb, RegsOb1} ->
-            ?SIP_DEBUG( "connection for register ~p successfully refreshed",
+            ?D( "connection for register ~p successfully refreshed",
                    [RegId]),
             State1 = ObState#state_ob{regs=[RegOb#sipreg_ob{fails=0}|RegsOb1]},
             {noreply, State#{nksip_uac_auto_outbound:=State1}};
@@ -200,7 +200,7 @@ nksip_uac_auto_register_send_reg(SrvId, Reg, Sync, State) ->
                     do_spawn(Fun, State)
             end,
             State1 = ObState#state_ob{pos=max(NextPos, Pos+1), regs=RegsOb1},
-            ?SIP_DEBUG( "Started auto registration outbound: ~p", [RegId]),
+            ?D( "Started auto registration outbound: ~p", [RegId]),
             Reg1 = Reg#sipreg{next=undefined},
             {ok, Reg1, SrvState1#{nksip_uac_auto_outbound:=State1}};
         false ->
@@ -284,7 +284,7 @@ nksip_uac_auto_register_upd_reg(SrvId, Reg, Code, Meta, State) when Code<300 ->
                                     RegOb1
                             end;
                         [] ->
-                            ?SIP_LOG(notice, "could not start outbound keep-alive (~s)", [CallId]),
+                            ?N("could not start outbound keep-alive (~s)", [CallId]),
                             RegOb1
                     end;
                 false ->
@@ -331,7 +331,7 @@ nksip_uac_auto_register_upd_reg(SrvId, Reg, Code, Meta, SrvState) ->
             end,
             Upper = min(MaxTime, BaseTime*math:pow(2, Fails+1)),
             Time = round(nklib_util:rand(50, 101) * Upper / 100),
-            ?SIP_LOG(notice, "Outbound registration failed (~s) "
+            ?N("Outbound registration failed (~s) "
                          "(basetime: ~p, fails: ~p, upper: ~p, time: ~p)",
                          [CallId, BaseTime, Fails+1, Upper, Time]),
             RegOb2 = RegOb1#sipreg_ob{
@@ -376,11 +376,11 @@ start_refresh(SrvId, Meta, Transp, Pid, Reg) ->
     Ref = {nksip_uac_auto_outbound_notify, RegId},
     case nksip_protocol:start_refresh(Pid, Time, Ref) of
         ok ->
-            ?SIP_LOG(info, "successfully set outbound keep-alive: ~p secs (~s)",
+            ?I("successfully set outbound keep-alive: ~p secs (~s)",
                   [Secs, CallId]),
             ok;
         error ->
-            ?SIP_LOG(notice, "could not start outbound keep-alive (~s)", [CallId]),
+            ?N("could not start outbound keep-alive (~s)", [CallId]),
             error
     end.
 

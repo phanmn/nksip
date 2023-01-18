@@ -97,7 +97,7 @@ send_prack(Resp, Id, DialogId, Call) ->
                     #sdp{} = LocalSDP -> 
                         LocalSDP;
                     _Other ->
-                        ?CALL_LOG(warning, "error calling prack_sdp/2: ~p", [_Other], Call),
+                        ?CALL_LOG(warning, "error calling prack_sdp/2: ~p", [_Other]),
                         <<>>
                 end;
             _ ->
@@ -134,7 +134,7 @@ send_prack(Resp, Id, DialogId, Call) ->
         end
     catch
         throw:_TError ->
-            ?CALL_LOG(warning, "could not send PRACK: ~p", [_TError], Call),
+            ?CALL_LOG(warning, "could not send PRACK: ~p", [_TError]),
             continue
     end.
 

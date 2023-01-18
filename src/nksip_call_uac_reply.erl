@@ -42,13 +42,6 @@
 reply(Class, UAC, #call{srv_id=SrvId}=Call) ->
     case ?CALL_SRV(SrvId, nksip_uac_reply, [Class, UAC, Call]) of
         {continue, [Class1, UAC1, Call1]} ->
-%%            case Class of
-%%                {Type, #sipmsg{}=SipMsg} ->
-%%                    %lager:error("NKLOG DO REPLY ~p, ~p ~p", [SrvId, Type,  SipMsg#sipmsg.nkport#nkport.remote_port]);
-%%                {error, _} ->
-%%                    ok
-%%            end,
-
             do_reply(Class1, UAC1, Call1);
         {ok, Call1} ->
             {ok, Call1}
@@ -137,7 +130,7 @@ do_reply({resp, Resp}, #trans{id=Id, from={fork, ForkId}}, Call) ->
 do_reply({error, Error}, #trans{id=Id, from={fork, ForkId}, request=Req}, Call) ->
     Reply = case nksip_reply:parse(Error) of
         error ->
-            ?CALL_LOG(notice, "Invalid proxy internal response: ~p", [Error], Call),
+            ?CALL_LOG(notice, "Invalid proxy internal response: ~p", [Error]),
             {internal_error, <<"Invalid Internal Proxy UAC Response">>};
         {ErrCode, ErrOpts} ->
             {ErrCode, ErrOpts}

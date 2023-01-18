@@ -272,7 +272,6 @@ dialog() ->
         {_, [<<"<sip:b1@127.0.0.1:5070;lr>">>,<<"<sip:b@b>">>,<<"<sip:a2@127.0.0.1;lr>">>]}
     ]} = nksip_dialog:get_metas([raw_local_target, raw_remote_target, raw_route_set], DialogA),
 
-    % lager:notice("DB: ~p", [DialogB]),
 
     {ok, [
         {_, <<"<sip:b2@127.0.0.1:5070>">>},

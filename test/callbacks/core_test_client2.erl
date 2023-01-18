@@ -32,7 +32,7 @@ sip_invite(Req, _Call) ->
     case nksip_sipmsg:header(<<"x-nk-op">>, Req) of
         [<<"wait">>] ->
             {ok, ReqId} = nksip_request:get_handle(Req),
-            lager:error("Next error about a looped_process is expected"),
+            ?LOG_ERROR("Next error about a looped_process is expected"),
             {error, looped_process} = nksip_request:reply(ringing, ReqId),
             spawn(
                 fun() ->

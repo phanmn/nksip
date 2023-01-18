@@ -48,7 +48,7 @@ request(Req, Call) ->
     #sipmsg{class={req, Method}, cseq={CSeq, _}, dialog_id=DialogId} = Req,
     case find(DialogId, Call) of
         #dialog{remote_seq=RemoteSeq}=Dialog ->
-            ?CALL_DEBUG("Dialog ~s UAS request ~p", [DialogId, Method], Call),
+            ?CALL_DEBUG("Dialog ~s UAS request ~p", [DialogId, Method]),
             case RemoteSeq>0 andalso CSeq<RemoteSeq of
                 true ->
                     {error, {internal_error, <<"Old CSeq in Dialog">>}};
@@ -119,7 +119,7 @@ do_request('BYE', _Req, #dialog{invite=#invite{}=Invite}=Dialog, Call) ->
         confirmed ->
             ok;
         _ ->
-            ?CALL_DEBUG("Dialog ~s (~p) received BYE", [Dialog#dialog.id, Status], Call)
+            ?CALL_DEBUG("Dialog ~s (~p) received BYE", [Dialog#dialog.id, Status])
     end,
     {ok, update({invite, bye}, Dialog, Call)};
 
@@ -188,7 +188,7 @@ do_ack(#sipmsg{class={req, 'ACK'}}=AckReq, Call) ->
         #dialog{invite=#invite{}=Invite}=Dialog ->
             #invite{status=Status, request=InvReq} = Invite,
             #sipmsg{cseq={InvSeq, _}} = InvReq,
-            ?CALL_DEBUG("Dialog ~s (~p) UAS request 'ACK'", [DialogId, Status], Call),
+            ?CALL_DEBUG("Dialog ~s (~p) UAS request 'ACK'", [DialogId, Status]),
             case Status of
                 accepted_uas when CSeq==InvSeq->
                     {HasSDP, SDP, Offer, Answer} = get_sdp(AckReq, Invite), 
@@ -229,10 +229,10 @@ response(Req, Resp, Call) ->
     #sipmsg{class={resp, Code, _Reason}, dialog_id=DialogId} = Resp,
     case find(DialogId, Call) of
         #dialog{}=Dialog ->
-            ?CALL_DEBUG("Dialog ~s UAS ~p response ~p", [DialogId, Method, Code], Call),
+            ?CALL_DEBUG("Dialog ~s UAS ~p response ~p", [DialogId, Method, Code]),
             do_response(Method, Code, Req, Resp, Dialog, Call);
         not_found when Code>100 andalso Code<300 andalso Method=='INVITE' ->
-            ?CALL_DEBUG("Dialog ~s UAS ~p response ~p", [DialogId, Method, Code], Call),
+            ?CALL_DEBUG("Dialog ~s UAS ~p response ~p", [DialogId, Method, Code]),
             Offer = case Body of 
                 #sdp{}=SDP ->
                     {remote, invite, SDP};
@@ -254,7 +254,7 @@ response(Req, Resp, Call) ->
         not_found when Code>=200 andalso Code<300 andalso 
                        (Method=='SUBSCRIBE' orelse Method=='NOTIFY' orelse
                         Method=='REFER') ->
-            ?CALL_DEBUG("Dialog ~s UAS ~p response ~p", [DialogId, Method, Code], Call),
+            ?CALL_DEBUG("Dialog ~s UAS ~p response ~p", [DialogId, Method, Code]),
             Dialog1 = nksip_call_dialog:create(uas, Req, Resp, Call),
             do_response(Method, Code, Req, Resp, Dialog1, Call);
         not_found ->
@@ -341,7 +341,7 @@ do_response('INVITE', _Code, _Req, _Resp, Dialog, Call) ->
 %%            undefined
 %%    end,
     ?CALL_LOG(info, "Dialog UAS ~s ignoring unexpected INVITE response ~p",
-                 [Dialog#dialog.id, _Code], Call),
+                 [Dialog#dialog.id, _Code]),
     store(Dialog, Call);
 
 do_response('BYE', _Code, Req, _Resp, Dialog, Call) ->

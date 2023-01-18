@@ -24,6 +24,7 @@
 
 -export([store_get/3, store_put/5, store_del/3, store_del_all/1]).
 
+-include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_event_compositor.hrl").
 
@@ -68,10 +69,10 @@ store_put(SrvId, AOR, Tag, Expires, Reg) ->
         {ok, ok} ->
             reply(Tag, Expires);
         {ok, Resp} ->
-            ?SIP_LOG(warning, "invalid callback response: ~p", [Resp]),
+            ?W("invalid callback response: ~p", [Resp]),
             {internal_error, "Callback Invalid Response"};
         error ->
-            ?SIP_LOG(warning, "invalid callback response", []),
+            ?W("invalid callback response", []),
             {internal_error, "Callback Invalid Response"}
     end.
 
@@ -85,10 +86,10 @@ store_del(SrvId, AOR, Tag) ->
         {ok, ok} ->
             reply(Tag, 0);
         {ok, Resp} ->
-            ?SIP_LOG(warning, "invalid callback response: ~p", [Resp]),
+            ?W("invalid callback response: ~p", [Resp]),
             {internal_error, "Callback Invalid Response"};
         error ->
-            ?SIP_LOG(warning, "invalid callback response", []),
+            ?W("invalid callback response", []),
             {internal_error, "Callback Invalid Response"}
     end.
 

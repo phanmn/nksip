@@ -192,7 +192,7 @@ get_timer(Req, #sipmsg{class={resp, Code, _}}=Resp, Class, Call)
                     {Default, undefined}
             end;
         invalid ->
-            ?CALL_LOG(warning, "Invalid Session-Expires in response", [], Call),
+            ?CALL_LOG(warning, "Invalid Session-Expires in response", []),
             {Default, undefined}
     end,
     Type = case Class==Refresh of
@@ -203,7 +203,7 @@ get_timer(Req, #sipmsg{class={resp, Code, _}}=Resp, Class, Call)
         false ->
             none
     end,
-    ?CALL_LOG(info, "session timer updated (~p, ~p)", [{Class, Refresh, Type}, SE], Call),
+    ?CALL_LOG(info, "session timer updated (~p, ~p)", [{Class, Refresh, Type}, SE]),
     {Type, SE}.
 
 

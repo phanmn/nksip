@@ -74,7 +74,7 @@ uac() ->
     {error, {invalid, <<"contact">>}} = nksip_uac:options(uac_test_client2, SipC1, [{contact, "<>"}]),
     {error, {invalid_config, cseq_num}} = nksip_uac:options(uac_test_client2, SipC1, [{cseq_num, -1}]),
     {error, service_not_started} = nksip_uac:options(none, SipC1, []),
-    lager:error("Next 2 errors about 'too_many_calls' are expected"),
+    ?LOG_ERROR("Next 2 errors about 'too_many_calls' are expected"),
     nklib_counters:incr(nksip_calls, 1000000000),
     {error, too_many_calls} = nksip_uac:options(uac_test_client2, SipC1, []),
     nklib_counters:incr(nksip_calls, -1000000000),
@@ -95,7 +95,7 @@ uac() ->
     CB = {callback, Fun},
     Hds = [{add, "x-nk-op", busy}, {add, "x-nk-prov", "true"}],
 
-    lager:info("Next two infos about connection error to port 50600 are expected"),
+    ?LOG_INFO("Next two infos about connection error to port 50600 are expected"),
     {error, service_unavailable} =
         nksip_uac:options(uac_test_client2, "<sip:127.0.0.1:50600;transport=tcp>", []),
     
@@ -192,7 +192,7 @@ timeout() ->
     SipC1 = "sip:127.0.0.1:5070",
     ok = nksip:update(uac_test_client2, #{sip_timer_t1=>10, sip_timer_c=>1}),
 
-    lager:notice("Next notices about several timeouts are expected"),
+    ?LOG_NOTICE("Next notices about several timeouts are expected"),
 
     {ok, 408, [{reason_phrase, <<"Timer F Timeout">>}]} = 
         nksip_uac:options(uac_test_client2, "sip:127.0.0.1:9999", [{get_meta,[reason_phrase]}]),

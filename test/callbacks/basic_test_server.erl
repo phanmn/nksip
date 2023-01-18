@@ -64,13 +64,13 @@ sip_route(Scheme, User, Domain, Req, _Call) ->
                     process
             end;
         true when Domain =:= <<"nksip">> ->
-            lager:error("NKLOG MY PROCESS2"),
+            ?LOG_ERROR("NKLOG MY PROCESS2"),
             case nksip_registrar:find(?MODULE, Scheme, User, Domain) of
                 [] -> {reply, temporarily_unavailable};
                 UriList -> {proxy, UriList, Opts}
             end;
         _ ->
-            lager:error("NKLOG MY PROCESS3"),
+            ?LOG_ERROR("NKLOG MY PROCESS3"),
             {proxy, ruri, Opts}
     end.
 

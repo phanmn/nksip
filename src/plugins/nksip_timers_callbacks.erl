@@ -99,7 +99,7 @@ nksip_dialog_update({invite, Status}, Dialog, Call) ->
             nksip_call_dialog:sip_dialog_update({invite_status, Status}, Dialog, Call),
             Dialog#dialog{invite=Invite#invite{status=Status}}
     end,
-    ?CALL_DEBUG("Dialog ~s ~p -> ~p", [_DialogId, OldStatus, Status], Call),
+    ?CALL_DEBUG("Dialog ~s ~p -> ~p", [_DialogId, OldStatus, Status]),
     Dialog2 = if
         Status==proceeding_uac; Status==proceeding_uas; 
         Status==accepted_uac; Status==accepted_uas ->
@@ -208,7 +208,7 @@ nksip_uas_dialog_response(Req, Resp, Opts, Call) ->
             nksip_timers_lib:uas_dialog_response(Req, Resp, Call);
         _ ->
             % In a multiple 2xx scenario, request is already deleted at UAS
-            ?CALL_LOG(info, "Skipping timer check because of no request", [], Call),
+            ?CALL_LOG(info, "Skipping timer check because of no request", []),
             Resp
     end,
     {continue, [Req, Resp1, Opts, Call]}.

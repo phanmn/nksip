@@ -84,7 +84,7 @@ check_auth(Req, Resp, UAC, Call) ->
                     {ok, nksip_call_uac:resend(Req1, UAC, Call)};
                 {error, _Error} ->
                     ?CALL_DEBUG("UAC ~p could not generate new auth request: ~p",
-                                [_TransId, _Error], Call),
+                                [_TransId, _Error]),
                     continue;
                 false ->
                     continue

@@ -77,7 +77,7 @@ srv_handle_call({nksip_uac_auto_register_start_reg, RegId, Uri, Opts},
         ok = undefined
     },
     Regs2 = lists:keystore(RegId, #sipreg.id, Regs, Reg),
-    ?SIP_DEBUG("Started auto registration: ~p", [Reg]),
+    ?D("Started auto registration: ~p", [Reg]),
     gen_server:cast(self(), nksip_uac_auto_register_check),
     {noreply, State#{nksip_uac_auto_register:=RegState#state{regs=Regs2}}};
 
@@ -131,7 +131,7 @@ srv_handle_call({nksip_uac_auto_register_start_ping, PingId, Uri, Opts}, From,
         next = 0,
         ok = undefined
     },
-    ?SIP_LOG(info, "Started auto ping: ~p (~s)", [Ping, CallId]),
+    ?I("Started auto ping: ~p (~s)", [Ping, CallId]),
     Pinsg1 = lists:keystore(PingId, #sipreg.id, Pings, Ping),
     gen_server:cast(self(), nksip_uac_auto_register_check),
     {noreply, State#{nksip_uac_auto_register:=RegState#state{pings=Pinsg1}}};
@@ -160,8 +160,8 @@ srv_handle_call(_Msg, _From, _Service, State) ->
 
 
 
-    lager:error("NKLOG OTHER: ~p", [_Msg]),
-    lager:error("NKLOG OTHER2: ~p", [State]),
+    ?LOG_ERROR("NKLOG OTHER: ~p", [_Msg]),
+    ?LOG_ERROR("NKLOG OTHER2: ~p", [State]),
     continue.
 
 

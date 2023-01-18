@@ -71,10 +71,10 @@ request(Req, Opts, From, Call) ->
     case From1 of
         {fork, _ForkId} ->
             ?CALL_DEBUG("UAC ~p sending request ~p ~p (~s, fork: ~p)",
-                        [_TransId, Method, Opts1, _MsgId, _ForkId], Call);
+                        [_TransId, Method, Opts1, _MsgId, _ForkId]);
         _ ->
             ?CALL_DEBUG("UAC ~p sending request ~p ~p (~s)",
-                        [_TransId, Method, Opts1, _MsgId], Call)
+                        [_TransId, Method, Opts1, _MsgId])
     end,
     nksip_call_uac_send:send(UAC, Call2).
 
@@ -126,7 +126,7 @@ resend(Req, UAC, Call) ->
         from = From
     } = UAC,
     #sipmsg{vias=[_|Vias], cseq={_, CSeqMethod}} = Req,
-    ?CALL_LOG(info, "UAC ~p ~p (~p) resending updated request", [_TransId, _Method, _Status], Call),
+    ?CALL_LOG(info, "UAC ~p ~p (~p) resending updated request", [_TransId, _Method, _Status]),
     {CSeq, Call1} = nksip_call_uac_dialog:new_local_seq(Req, Call),
     Req1 = Req#sipmsg{vias=Vias, cseq={CSeq, CSeqMethod}},
     % Contact would be already generated
@@ -158,7 +158,7 @@ cancel(TransId, Opts, From, #call{trans=Trans}=Call) when is_integer(TransId) ->
                 _ ->
                     ok
             end,
-            ?CALL_DEBUG("UAC ~p not found to CANCEL", [TransId], Call),
+            ?CALL_DEBUG("UAC ~p not found to CANCEL", [TransId]),
             Call
     end.
 
@@ -172,21 +172,21 @@ cancel(#trans{id=_TransId, class=uac, cancel=Cancel, status=Status}=UAC, Opts, C
        when Cancel==undefined; Cancel==to_cancel ->
     case Status of
         invite_calling ->
-            ?CALL_DEBUG("UAC ~p (invite_calling) delaying CANCEL", [_TransId], Call),
+            ?CALL_DEBUG("UAC ~p (invite_calling) delaying CANCEL", [_TransId]),
             UAC1 = UAC#trans{cancel=to_cancel},
             update(UAC1, Call);
         invite_proceeding ->
-            ?CALL_DEBUG("UAC ~p (invite_proceeding) generating CANCEL", [_TransId], Call),
+            ?CALL_DEBUG("UAC ~p (invite_proceeding) generating CANCEL", [_TransId]),
             CancelReq = nksip_call_uac_make:make_cancel(UAC#trans.request, Opts),
             UAC1 = UAC#trans{cancel=cancelled},
             request(CancelReq, [no_dialog], none, update(UAC1, Call));
         invite_completed ->
-            ?CALL_LOG(info, "UAC ~p (invite_completed) received CANCEL", [_TransId], Call),
+            ?CALL_LOG(info, "UAC ~p (invite_completed) received CANCEL", [_TransId]),
             Call
     end;
 
 cancel(#trans{id=_TransId, cancel=_Cancel, status=_Status}, _Opts, Call) ->
-    ?CALL_DEBUG("UAC ~p (~p) cannot CANCEL request: (~p)", [_TransId, _Status, _Cancel], Call),
+    ?CALL_DEBUG("UAC ~p (~p) cannot CANCEL request: (~p)", [_TransId, _Status, _Cancel]),
     Call.
 
 
@@ -297,7 +297,7 @@ response(Resp, #call{srv_id=SrvId, trans=Trans}=Call) ->
             end;
         _ ->
             ?CALL_LOG(info, "UAC received ~p ~p response for unknown transaction",
-                      [_Method, _Code], Call),
+                      [_Method, _Code]),
             Call
     end.
 

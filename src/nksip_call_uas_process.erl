@@ -113,7 +113,7 @@ check_notify(Method, Req, UAS, Call) ->
     nksip_call:call().
 
 check_missing_dialog('ACK', #sipmsg{to={_, <<>>}}, UAS, Call) ->
-    ?CALL_LOG(notice, "received out-of-dialog ACK", [], Call),
+    ?CALL_LOG(notice, "received out-of-dialog ACK", []),
     update(UAS#trans{status=finished}, Call);
     
 check_missing_dialog(Method, #sipmsg{to={_, <<>>}}, UAS, Call)
@@ -136,7 +136,6 @@ check_missing_dialog(Method, _Req, UAS, #call{srv_id=SrvId}=Call) ->
     nksip_call:call().
 
 dialog(Method, Req, UAS, Call) ->
-    % lager:error("DIALOG: ~p\n~p\n~p\n~p", [Method, Req, UAS, Call]),
     #sipmsg{to={_, ToTag}} = Req,
     #trans{opts=Opts, stateless=Stateless} = UAS,
     case Stateless orelse ToTag == <<>> of
@@ -148,7 +147,7 @@ dialog(Method, Req, UAS, Call) ->
                     method(Method, Req, UAS, Call1);
                 {error, _Error} when Method=='ACK' ->
                     ?CALL_LOG(notice, "UAS ~p 'ACK' dialog request error: ~p",
-                                 [UAS#trans.id, _Error], Call),
+                                 [UAS#trans.id, _Error]),
                     UAS2 = UAS#trans{status=finished},
                     update(UAS2, Call);
                 {error, Error} ->
@@ -189,7 +188,7 @@ call_user_sip_method(#trans{method='ACK', request=Req}, #call{srv_id=SrvId}=Call
         ok ->
             ok;
         _Error ->
-            ?CALL_LOG(error, "Error calling callback ack/1: ~p", [_Error], Call)
+            ?CALL_LOG(error, "Error calling callback ack/1: ~p", [_Error])
     end,
     Call;
 
@@ -231,7 +230,7 @@ call_user_sip_method(#trans{method=Method, request=Req}=UAS, #call{srv_id=SrvId}
         noreply -> 
             Call;
         _Error ->
-            ?CALL_LOG(error, "Error calling callback ~p/2: ~p", [Fun, _Error], Call),
+            ?CALL_LOG(error, "Error calling callback ~p/2: ~p", [Fun, _Error]),
             Reply = {internal_error, "Service Error"},
             nksip_call_uas:do_reply(Reply, UAS, Call)
     end.
@@ -245,7 +244,6 @@ call_user_sip_method(#trans{method=Method, request=Req}=UAS, #call{srv_id=SrvId}
 %     nksip_call:call().
 
 % dialog(Method, Req, UAS, Call) ->
-%     % lager:error("DIALOG: ~p\n~p\n~p\n~p", [Method, Req, UAS, Call]),
 %     #sipmsg{to={_, ToTag}} = Req,
 %     #trans{id=Id, opts=Opts, stateless=Stateless} = UAS,
 %     #call{package=SrvId} = Call,
@@ -281,7 +279,7 @@ call_user_sip_method(#trans{method=Method, request=Req}=UAS, #call{srv_id=SrvId}
 %                         end;
 %                     {error, Error} when Method=='ACK' -> 
 %                         ?CALL_LOG(notice, "UAS ~p 'ACK' dialog request error: ~p",
-%                                      [Id, Error], Call),
+%                                      [Id, Error]),
 %                         UAS2 = UAS#trans{status=finished},
 %                         update(UAS2, Call);
 %                     {error, Error} ->

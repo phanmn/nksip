@@ -26,7 +26,7 @@
 -export_type([status/0, incoming/0]).
 
 -import(nksip_call_lib, [update/2]).
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 
@@ -117,13 +117,13 @@ process_trans_ack(InvUAS, Call) ->
                     InvUAS3 = InvUAS2#trans{status=finished},
                     nksip_call_lib:timeout_timer(cancel, InvUAS3, Call)
             end,
-            ?CALL_DEBUG("InvUAS ~p received in-transaction ACK", [_Id], Call),
+            ?CALL_DEBUG("InvUAS ~p received in-transaction ACK", [_Id]),
             update(InvUAS4, Call);
         invite_confirmed ->
-            ?CALL_DEBUG("InvUAS ~p received non 2xx ACK in ~p", [_Id, Status], Call),
+            ?CALL_DEBUG("InvUAS ~p received non 2xx ACK in ~p", [_Id, Status]),
             Call;
         _ ->
-            ?CALL_LOG(notice, "InvUAS ~p received non 2xx ACK in ~p", [_Id, Status], Call),
+            ?CALL_LOG(notice, "InvUAS ~p received non 2xx ACK in ~p", [_Id, Status]),
             Call
     end.
 
@@ -157,14 +157,14 @@ process_retrans(UAS, Call) ->
             case nksip_call_uas_transp:resend_response(Resp, []) of
                 {ok, _} ->
                     ?CALL_LOG(info, "UAS ~p ~p (~p) sending ~p retransmission",
-                               [_Id, _Method, Status, _Code], Call);
+                               [_Id, _Method, Status, _Code]);
                 {error, _} ->
                     ?CALL_LOG(notice, "UAS ~p ~p (~p) could not send ~p retransmission",
-                                  [_Id, _Method, Status, _Code], Call)
+                                  [_Id, _Method, Status, _Code])
             end;
         _ ->
             ?CALL_LOG(info, "UAS ~p ~p received retransmission in ~p",
-                       [_Id, _Method, Status], Call)
+                       [_Id, _Method, Status])
     end,
     Call.
 
@@ -206,7 +206,7 @@ process_request(Req, UASTransId, Call) ->
         next = NextId, 
         msgs = Msgs
     } = Call,
-    ?CALL_DEBUG("UAS ~p started for ~p (~s)", [NextId, Method, MsgId], Call),
+    ?CALL_DEBUG("UAS ~p started for ~p (~s)", [NextId, Method, MsgId]),
     LoopId = loop_id(Req1),
     DialogId = nksip_dialog_lib:make_id(uas, Req1),
     Status = case Method of

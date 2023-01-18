@@ -22,7 +22,7 @@
 -module(nksip_call_uas_make).
 -author('Carlos Gonzalez <carlosj.gf@gmail.com>').
 -export([make/3]).
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 -include_lib("nkserver/include/nkserver.hrl").

@@ -23,7 +23,7 @@
 -author('Carlos Gonzalez <carlosj.gf@gmail.com>').
 
 -export([make/5, proxy_make/2, make_cancel/2, make_ack/2, make_ack/1]).
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include_lib("nkpacket/include/nkpacket.hrl").
 -include_lib("nkserver/include/nkserver.hrl").
 -include("nksip.hrl").

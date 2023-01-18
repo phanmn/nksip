@@ -154,7 +154,7 @@ close_file(SrvId) ->
         undefined -> 
             ok;
         {File, OldDevice} ->
-            ?SIP_LOG(notice, "Closing file ~s (~p)", [File, OldDevice]),
+            ?N("Closing file ~s (~p)", [File, OldDevice]),
             nksip_app:del({nksip_trace_file, SrvId}),
             file:close(OldDevice),
             ok
@@ -168,7 +168,7 @@ open_file(_PkgId, console) ->
 open_file(SrvId, File) ->
     case file:open(File, [append]) of
         {ok, IoDevice} -> 
-            ?SIP_LOG(notice, "File ~s opened for trace (~p)", [File, IoDevice]),
+            ?N("File ~s opened for trace (~p)", [File, IoDevice]),
             nksip_app:put({nksip_trace_file, SrvId}, {File, IoDevice}),
             ok;
         {error, _Error} -> 

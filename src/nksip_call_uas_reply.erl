@@ -39,7 +39,7 @@
 
 
 reply(_Reply, #trans{method='ACK', id=_Id, status=_Status}=UAS, Call) ->
-    ?CALL_LOG(notice, "UAC ~p 'ACK' (~p) trying to send a reply ~p", [_Id, _Status, _Reply], Call),
+    ?CALL_LOG(notice, "UAC ~p 'ACK' (~p) trying to send a reply ~p", [_Id, _Status, _Reply]),
     UAS1 = UAS#trans{status=finished},
     {{error, invalid_call}, update(UAS1, Call)};
 
@@ -71,7 +71,7 @@ reply({#sipmsg{class={resp, Code, _Reason}}=Resp, SendOpts},
 reply({#sipmsg{class={resp, _Code, _Reason}}, _}, #trans{code=_LastCode}=UAS, Call) ->
     #trans{status=_Status, id=_Id, method=_Method} = UAS,
     ?CALL_LOG(info, "UAS ~p ~p cannot send ~p response in ~p (last code was ~p)",
-               [_Id, _Method, _Code, _Status, _LastCode], Call),
+               [_Id, _Method, _Code, _Status, _LastCode]),
     {{error, invalid_call}, Call};
 
 reply(SipReply, #trans{request=#sipmsg{}=Req}=UAS, Call) ->
@@ -79,7 +79,7 @@ reply(SipReply, #trans{request=#sipmsg{}=Req}=UAS, Call) ->
 
 reply(_SipReply, #trans{id=_Id, method=_Method, status=_Status}, Call) ->
     ?CALL_LOG(info, "UAS ~p ~p cannot send ~p response in ~p (no stored request)",
-               [_Id, _Method, _SipReply, _Status], Call),
+               [_Id, _Method, _SipReply, _Status]),
     {{error, invalid_call}, Call}.
 
 
@@ -127,12 +127,12 @@ send({Resp, SendOpts}, UAS, Call) ->
     Call3 = Call2#call{msgs=[Msg|Msgs]},
     case Stateless of
         true when Method/='INVITE' ->
-            ?CALL_DEBUG("UAS ~p ~p stateless reply ~p", [Id, Method, Code2], Call),
+            ?CALL_DEBUG("UAS ~p ~p stateless reply ~p", [Id, Method, Code2]),
             UAS1 = UAS#trans{status=finished, response=Resp2, code=Code2},
             UAS2 = nksip_call_lib:timeout_timer(cancel, UAS1, Call3),
             {UserReply, update(UAS2, Call3)};
         _ ->
-            ?CALL_DEBUG("UAS ~p ~p stateful reply ~p", [Id, Method, Code2], Call),
+            ?CALL_DEBUG("UAS ~p ~p stateful reply ~p", [Id, Method, Code2]),
             UAS2 = UAS#trans{response=Resp2, code=Code2},
             Call4 = update(UAS2, Call3),
             case  ?CALL_SRV(SrvId, nksip_uas_sent_reply, [Call4]) of

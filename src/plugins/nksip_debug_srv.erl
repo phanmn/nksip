@@ -26,6 +26,7 @@
          handle_cast/2, handle_info/2]).
 
 -include("nksip.hrl").
+-include_lib("kernel/include/logger.hrl").
 
 
 %% ===================================================================
@@ -53,7 +54,7 @@ init([]) ->
     {noreply, #state{}}.
 
 handle_call(Msg, _From, State) ->
-    lager:error("Module ~p received unexpected call ~p", [?MODULE, Msg]),
+    ?LOG_ERROR("Module ~p received unexpected call ~p", [?MODULE, Msg]),
     {noreply, State}.
 
 
@@ -62,7 +63,7 @@ handle_call(Msg, _From, State) ->
     {noreply, #state{}}.
 
 handle_cast(Msg, State) ->
-    lager:error("Module ~p received unexpected cast ~p", [?MODULE, Msg]),
+    ?LOG_ERROR("Module ~p received unexpected cast ~p", [?MODULE, Msg]),
     {noreply, State}.
 
 
@@ -71,7 +72,7 @@ handle_cast(Msg, State) ->
     {noreply, #state{}}.
 
 handle_info(Info, State) ->
-    lager:warning("Module ~p received unexpected info: ~p", [?MODULE, Info]),
+    ?LOG_WARNING("Module ~p received unexpected info: ~p", [?MODULE, Info]),
     {noreply, State}.
 
 

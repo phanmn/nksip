@@ -133,7 +133,7 @@ work({incoming, NkPort, Msg}, _From, Call) ->
              ?CALL_SRV(SrvId, nksip_connection_recv, [SipMsg, Msg]),
             work({incoming, SipMsg}, none, Call);
         {error, _Error} ->
-            ?CALL_LOG(warning, "Error parsing SipMsg1: ~p", [_Error], Call),
+            ?CALL_LOG(warning, "Error parsing SipMsg1: ~p", [_Error]),
             Call;
         {reply_error, _Error, Reply} ->
             case nksip_util:get_connected(SrvId, NkPort) of
@@ -142,10 +142,10 @@ work({incoming, NkPort, Msg}, _From, Call) ->
                         ok ->
                             ok;
                         {error, _SendError} ->
-                            ?CALL_LOG(warning, "Error parsing SipMsg2: ~p", [_Error], Call)
+                            ?CALL_LOG(warning, "Error parsing SipMsg2: ~p", [_Error])
                     end;
                 [] ->
-                    ?CALL_LOG(warning, "Error parsing SipMsg3: ~p", [_Error], Call)
+                    ?CALL_LOG(warning, "Error parsing SipMsg3: ~p", [_Error])
             end,
             Call
     end;

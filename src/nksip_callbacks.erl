@@ -26,7 +26,7 @@
 -module(nksip_callbacks).
 -author('Carlos Gonzalez <carlosj.gf@gmail.com>').
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include_lib("nkserver/include/nkserver.hrl").
 -include("nksip_call.hrl").
@@ -465,13 +465,12 @@ nksip_preparse(SipMsg, Headers) ->
 				| continue().
 
 nksip_user_callback(SrvId, Fun, Args) ->
-	%lager:error("NKLOG CALLING ~p, ~p, ~p", [SrvId, Fun, Args]),
 	case catch ?CALL_SRV(SrvId, Fun, Args) of
 	    {'EXIT', Error} ->
 	        ?CALL_LOG(error, "Error calling callback ~p/~p: ~p", [Fun, length(Args), Error]),
 	        error;
 	    Reply ->
-	    	% ?CALL_LOG(warning, "Called ~p/~p (~p): ~p", [Fun, length(Args), Args, Reply], Call),
+	    	% ?CALL_LOG(warning, "Called ~p/~p (~p): ~p", [Fun, length(Args), Args, Reply]),
 	    	% ?CALL_DEBUG("Called ~p/~p: ~p", [Fun, length(Args), Reply]),
 	        {ok, Reply}
 	end.

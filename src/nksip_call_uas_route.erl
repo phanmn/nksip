@@ -26,7 +26,7 @@
 
 -import(nksip_call_lib, [update/2]).
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 -include_lib("nkserver/include/nkserver.hrl").
@@ -57,7 +57,7 @@ send_100(UAS, #call{srv_id=SrvId}=Call) ->
                 {ok, _} ->
                     check_cancel(UAS, Call);
                 {error, _} ->
-                    ?CALL_LOG(notice, "UAS ~p ~p could not send '100' response", [UAS#trans.id, Method], Call),
+                    ?CALL_LOG(notice, "UAS ~p ~p could not send '100' response", [UAS#trans.id, Method]),
                     nksip_call_uas:do_reply(service_unavailable, UAS, Call)
             end;
         false ->
@@ -72,7 +72,7 @@ send_100(UAS, #call{srv_id=SrvId}=Call) ->
 check_cancel(UAS, #call{srv_id=SrvId}=Call) ->
     case is_cancel(UAS, Call) of
         {true, #trans{status=invite_proceeding, from=From}=InvUAS} ->
-            ?CALL_DEBUG("UAS ~p matched 'CANCEL' as ~p", [UAS#trans.id, InvUAS#trans.id], Call),
+            ?CALL_DEBUG("UAS ~p matched 'CANCEL' as ~p", [UAS#trans.id, InvUAS#trans.id]),
             Call1 = nksip_call_uas:do_reply(ok, UAS, Call), 
             Args = [InvUAS#trans.request, UAS#trans.request, Call1],
             nksip_util:user_callback(SrvId, sip_cancel, Args),
@@ -97,7 +97,7 @@ check_cancel(UAS, #call{srv_id=SrvId}=Call) ->
 -spec is_cancel(nksip_call:trans(), nksip_call:call()) ->
     {true, nksip_call:trans()} | false.
 
-is_cancel(#trans{method='CANCEL', request=CancelReq}, #call{trans=Trans}=Call) ->
+is_cancel(#trans{method='CANCEL', request=CancelReq}, #call{trans=Trans}) ->
     TransReq = CancelReq#sipmsg{class={req, 'INVITE'}},
     ReqTransId = nksip_call_lib:uas_transaction_id(TransReq),
     case lists:keyfind(ReqTransId, #trans.trans_id, Trans) of
@@ -112,11 +112,11 @@ is_cancel(#trans{method='CANCEL', request=CancelReq}, #call{trans=Trans}=Call) -
                 true ->
                     ?CALL_LOG(notice, "UAS ~p rejecting CANCEL because it came from ~p:~p, "
                                  "INVITE came from ~p:~p", 
-                                 [InvUAS#trans.id, CancelIp, CancelPort, InvIp, InvPort], Call),
+                                 [InvUAS#trans.id, CancelIp, CancelPort, InvIp, InvPort]),
                     false
             end;
         _ ->
-            ?CALL_DEBUG("received CANCEL for unknown transaction", [], Call),
+            ?CALL_DEBUG("received CANCEL for unknown transaction", []),
             false
     end;
 
@@ -153,7 +153,7 @@ authorize_launch(#trans{request=Req}=UAS, #call{srv_id=SrvId}=Call) ->
 authorize_reply(Reply, UAS, Call) ->
     #trans{request=Req} = UAS,
     #sipmsg{dialog_id=DialogId, to={_, ToTag}} = Req,
-    ?CALL_DEBUG("UAS ~p ~p authorize reply: ~p", [UAS#trans.id, UAS#trans.method, Reply], Call),
+    ?CALL_DEBUG("UAS ~p ~p authorize reply: ~p", [UAS#trans.id, UAS#trans.method, Reply]),
     case Reply of
         ok ->
             Call1 = case ToTag of
@@ -174,7 +174,7 @@ authorize_reply(Reply, UAS, Call) ->
         {proxy_authenticate, Realm} ->
             nksip_call_uas:do_reply({proxy_authenticate, Realm}, UAS, Call);
         _Other ->
-            ?CALL_LOG(warning, "Invalid response calling authenticate/2: ~p", [_Other], Call),
+            ?CALL_LOG(warning, "Invalid response calling authenticate/2: ~p", [_Other]),
             nksip_call_uas:do_reply({internal_error, "Service Response"}, UAS, Call)
     end.
 
@@ -200,7 +200,7 @@ route_launch(#trans{ruri=RUri}=UAS, #call{srv_id=SrvId}=Call) ->
 
 route_reply(Reply, UAS, Call) ->
     #trans{ruri=RUri} = UAS,
-    ?CALL_DEBUG("UAS ~p ~p route reply: ~p", [UAS#trans.id, UAS#trans.method, Reply], Call),
+    ?CALL_DEBUG("UAS ~p ~p route reply: ~p", [UAS#trans.id, UAS#trans.method, Reply]),
     Route = case Reply of
         {reply, Resp} ->
             {reply, Resp};
@@ -231,7 +231,7 @@ route_reply(Reply, UAS, Call) ->
         {strict_proxy, Opts} ->
             {strict_proxy, Opts};
         _Invalid ->
-            ?CALL_LOG(warning, "Invalid reply from route/5 callback: ~p", [_Invalid], Call),
+            ?CALL_LOG(warning, "Invalid reply from route/5 callback: ~p", [_Invalid]),
             {reply_stateless, {internal_error, "Invalid Service Reply"}}
     end,
     do_route(Route, UAS, Call).
@@ -267,7 +267,7 @@ do_route(process_stateless, #trans{method='CANCEL'}=UAS, Call) ->
 
 do_route(process_stateless, #trans{method='INVITE'}=UAS, Call) ->
     ?CALL_LOG(warning, "Invalid response 'process_stateless' for INVITE request "
-                  " in route/5 callback", [], Call),
+                  " in route/5 callback", []),
     nksip_call_uas:do_reply({internal_error, "Invalid Service Response"}, UAS, Call);
 
 do_route(process_stateless, UAS, Call) ->
@@ -308,7 +308,7 @@ do_route({proxy, UriList, ProxyOpts}, UAS, Call) ->
 do_route({strict_proxy, Opts}, #trans{request=Req}=UAS, Call) ->
     case Req#sipmsg.routes of
        [Next|_] ->
-            ?CALL_LOG(info, "strict routing to ~p", [Next], Call),
+            ?CALL_LOG(info, "strict routing to ~p", [Next]),
             do_route({proxy, Next, [stateless|Opts]}, UAS, Call);
         _ ->
             nksip_call_uas:do_reply({internal_error, <<"Invalid Srict Routing">>}, UAS, Call)

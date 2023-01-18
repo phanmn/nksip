@@ -22,7 +22,7 @@
 -module(nksip_call_dialog).
 -author('Carlos Gonzalez <carlosj.gf@gmail.com>').
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 -include_lib("nkpacket/include/nkpacket.hrl").
@@ -61,12 +61,12 @@ create(Class, Req, Resp, Call) ->
     } = Resp,
     #call{srv_id=SrvId} = Call,
     {ok, {_, Transp, _, _}} = nkpacket:get_local(RespNkPort),
-    ?CALL_DEBUG("Dialog ~s ~s created", [DialogId, Class], Call),
+    ?CALL_DEBUG("Dialog ~s ~s created", [DialogId, Class]),
     _ConnPid = case ReqPid == RespPid of
         true ->
             ReqPid;
         false ->
-            ?CALL_LOG(warning, "dialog have different ports for req and resp", Call),
+            ?CALL_LOG(warning, "dialog have different ports for req and resp", []),
             undefined
     end,
     nklib_counters:async([nksip_dialogs]),
@@ -160,7 +160,7 @@ do_update({invite, Status}, Dialog, Call) ->
             sip_dialog_update({invite_status, Status}, Dialog, Call),
             Dialog#dialog{invite=Invite#invite{status=Status}}
     end,
-    ?CALL_DEBUG("Dialog ~s ~p -> ~p", [Dialog#dialog.id, OldStatus, Status], Call),
+    ?CALL_DEBUG("Dialog ~s ~p -> ~p", [Dialog#dialog.id, OldStatus, Status]),
     Dialog2 = if
         Status==proceeding_uac; Status==proceeding_uas; 
         Status==accepted_uac; Status==accepted_uas ->
@@ -253,11 +253,11 @@ target_update(Class, Req, Resp, Dialog, Call) ->
                     RT
             end;
         [] ->
-            ?CALL_LOG(notice, "Dialog ~s: no Contact in remote target", [Dialog#dialog.id], Call),
+            ?CALL_LOG(notice, "Dialog ~s: no Contact in remote target", [Dialog#dialog.id]),
             RemoteTarget;
         _RTOther ->
             ?CALL_LOG(notice, "Dialog ~s: invalid Contact in remote rarget: ~p",
-                         [Dialog#dialog.id, _RTOther], Call),
+                         [Dialog#dialog.id, _RTOther]),
             RemoteTarget
     end,
     LocalTarget1 = case LocalTargets of
@@ -503,12 +503,12 @@ update_meta(Key, Value, DialogId, Call) ->
         #dialog{meta=DialogMeta1} = Dialog1 ->
             DialogMeta2 = nklib_util:store_value(Key, Value, DialogMeta1),
             Dialog2 = Dialog1#dialog{meta=DialogMeta2},
-            ?CALL_DEBUG("Meta {~p,~p} updated in dialog", [Key, Value], Call),
+            ?CALL_DEBUG("Meta {~p,~p} updated in dialog", [Key, Value]),
             store(Dialog2, Call);
         not_found ->
             #call{meta=CallMeta1} = Call,
             CallMeta2 = nklib_util:store_value(Key, Value, CallMeta1),
-            ?CALL_DEBUG("Meta {~p,~p} updated in call", [Key, Value], Call),
+            ?CALL_DEBUG("Meta {~p,~p} updated in call", [Key, Value]),
             Call#call{meta=CallMeta2}
     end.
 
@@ -524,7 +524,7 @@ timer(Tag, Id, Call) ->
         #dialog{} = Dialog ->
             do_timer(Tag, Dialog, Call);
         not_found ->
-            ?CALL_LOG(warning, "Call ignoring dialog timer (~p, ~p)", [Tag, Id], Call),
+            ?CALL_LOG(warning, "Call ignoring dialog timer (~p, ~p)", [Tag, Id]),
             Call
     end.
 
@@ -541,7 +541,7 @@ do_timer(invite_retrans, #dialog{id=DialogId, invite=Invite}=Dialog, Call) ->
                 accepted_uas ->
                     case nksip_call_uas_transp:resend_response(Resp, []) of
                         {ok, _} ->
-                            ?CALL_LOG(info, "Dialog ~s resent response", [DialogId], Call),
+                            ?CALL_LOG(info, "Dialog ~s resent response", [DialogId]),
                             #call{times=#call_times{t2=T2}} = Call,
                             Invite1 = Invite#invite{
                                 retrans_timer = start_timer(Next, invite_retrans, DialogId),
@@ -550,17 +550,17 @@ do_timer(invite_retrans, #dialog{id=DialogId, invite=Invite}=Dialog, Call) ->
                             update(none, Dialog#dialog{invite=Invite1}, Call);
                         {error, _} ->
                             ?CALL_LOG(notice, "Dialog ~s could not resend response",
-                                         [DialogId], Call),
+                                         [DialogId]),
                             update({invite, {stop, ack_timeout}}, Dialog, Call)
                     end;
                 _ ->
                     ?CALL_LOG(notice, "Dialog ~s retrans timer fired in ~p",
-                                [DialogId, Status], Call),
+                                [DialogId, Status]),
                     Call
             end;
         undefined ->
             ?CALL_LOG(notice, "Dialog ~s retrans timer fired with no INVITE",
-                         [DialogId], Call),
+                         [DialogId]),
             Call
     end;
 
@@ -572,26 +572,26 @@ do_timer(invite_refresh, #dialog{invite=Invite}=Dialog, Call) ->
 do_timer(invite_timeout, #dialog{id=DialogId, invite=Invite}=Dialog, Call) ->
     case Invite of
         #invite{class=Class} ->
-            ?CALL_LOG(notice, "Dialog ~s (~p) timeout timer fired", [DialogId, Invite#invite.status], Call),
+            ?CALL_LOG(notice, "Dialog ~s (~p) timeout timer fired", [DialogId, Invite#invite.status]),
             case Class of
                 proxy ->
                     update({invite, {stop, timeout}}, Dialog, Call);
                 _ ->
-                    ?CALL_LOG(notice, "Dialog ~s sending BYE on timeout", [DialogId], Call),
+                    ?CALL_LOG(notice, "Dialog ~s sending BYE on timeout", [DialogId]),
                     case 
                         nksip_call_uac:dialog(DialogId, 'BYE', 
-                            [async, {reason, {sip, 408, "Dialog Timeout"}}], Call) 
+                            [async, {reason, {sip, 408, "Dialog Timeout"}}], Call)
                     of
                         {ok, Call1} ->
                             sip_dialog_update(invite_timeout, Dialog, Call),
                             Call1;
                         {error, _Error} ->
-                            ?CALL_LOG(warning, "Could not send timeout BYE: ~p", [_Error], Call),
+                            ?CALL_LOG(warning, "Could not send timeout BYE: ~p", [_Error]),
                             update({invite, {stop, timeout}}, Dialog, Call)
                     end
             end;
         _ ->
-            ?CALL_LOG(notice, "Dialog ~s unknown INVITE timeout timer", [DialogId], Call),
+            ?CALL_LOG(notice, "Dialog ~s unknown INVITE timeout timer", [DialogId]),
             Call
     end;
 

@@ -25,7 +25,7 @@
 -export([route/4, response_stateless/2]).
 -export([normalize_uriset/1]).
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include_lib("nkpacket/include/nkpacket.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
@@ -50,7 +50,6 @@ route(UriList, ProxyOpts, UAS, Call) ->
             UriSet0 ->
                 UriSet0
         end,
-        % lager:warning("URISET: ~p", [UriList]),
         #trans{method=Method} = UAS,
         {UriSet2, ProxyOpts2, UAS2, Call2} = case
             ?CALL_SRV(SrvId, nksip_route, [UriSet, ProxyOpts, UAS, Call])
@@ -105,17 +104,17 @@ route_stateless(Req, Uri, ProxyOpts, Call) ->
             case nksip_call_uac_transp:send_request(Req2, Call, SendOpts) of
                 {ok, _} ->  
                     ?CALL_DEBUG("Stateless proxy routing ~p to ~s",
-                                [_Method, nklib_unparse:uri(Uri)], Call);
+                                [_Method, nklib_unparse:uri(Uri)]);
                 {error, _Error} ->
                     ?CALL_LOG(notice, "Stateless proxy could not route ~p to ~s: ~p",
-                                 [_Method, nklib_unparse:uri(Uri), _Error], Call)
+                                 [_Method, nklib_unparse:uri(Uri), _Error])
             end,
            noreply;
         {reply, Reply} ->
             throw({reply, Reply});
         {error, _Error} ->
             ?CALL_LOG(warning, "Error procesing proxy opts: ~p, ~p: ~p",
-                          [Uri, ProxyOpts, _Error], Call),
+                          [Uri, ProxyOpts, _Error]),
             throw({reply, {internal_error, "Proxy Options"}})
     end.
     
@@ -146,15 +145,15 @@ response_stateless(#sipmsg{vias=[_, Via|RestVias], nkport=NkPort}=Resp, Call) ->
     Resp1 = Resp#sipmsg{vias=[Via|RestVias], nkport=NkPort1},
     case nksip_call_uas_transp:send_response(Resp1, []) of
         {ok, _} -> 
-            ?CALL_DEBUG("Stateless proxy sent ~p ~p response", [_Method, _Code], Call);
+            ?CALL_DEBUG("Stateless proxy sent ~p ~p response", [_Method, _Code]);
         {error, _} -> 
             ?CALL_LOG(notice, "Stateless proxy could not send ~p ~p response",
-                         [_Method, _Code], Call)
+                         [_Method, _Code])
     end,
     Call;
 
 response_stateless(_, Call) ->
-    ?CALL_LOG(notice, "Stateless proxy could not send response: no Via", [], Call),
+    ?CALL_LOG(notice, "Stateless proxy could not send response: no Via", []),
     Call.
 
 

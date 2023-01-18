@@ -24,7 +24,7 @@
 
 -export([send_request/3, resend_request/2, add_headers/6]).
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include_lib("nkpacket/include/nkpacket.hrl").
 -include_lib("nkserver/include/nkserver.hrl").
 -include("nksip.hrl").

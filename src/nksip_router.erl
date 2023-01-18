@@ -33,8 +33,6 @@
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 
--define(LLOG(Type, Txt, Args), lager:Type("NkSIP Router: "++Txt, Args)).
-
 
 %% ===================================================================
 %% Public
@@ -70,7 +68,7 @@ send_work(SrvId, CallId, Work, Caller) ->
                 {error, {exit, {{timeout, _}, _StackTrace}}} ->
                     {error, {exit, timeout}};
                 {error, {exit, Exit}} ->
-                    ?LLOG(warning, "error calling send_work_sync (~p): ~p", [work_id(Work), Exit]),
+                    ?LOG(warning, "error calling send_work_sync (~p): ~p", [work_id(Work), Exit]),
                     {error, {exit, Exit}};
                 Other ->
                     Other
@@ -141,7 +139,7 @@ handle_call({work, SrvId, CallId, Work, Caller}, From, State) ->
         {ok, State2} ->
             {noreply, State2};
         {error, Error} ->
-            ?LLOG(error, "error sending work ~p: ~p", [Work, Error]),
+            ?LOG(error, "error sending work ~p: ~p", [Work, Error]),
             {reply, {error, Error}, State}
     end;
 
@@ -149,7 +147,7 @@ handle_call(size, _From, #state{calls=Calls}=State) ->
     {reply, maps:size(Calls), State};
 
 handle_call(Msg, _From, State) -> 
-    lager:error("Module ~p received unexpected call ~p", [?MODULE, Msg]),
+    ?LOG_ERROR("Module ~p received unexpected call ~p", [?MODULE, Msg]),
     {noreply, State}.
 
 
@@ -163,13 +161,13 @@ handle_cast({work_received, CallPid, WorkRef}, #state{calls=Calls}=State) ->
             WorkList2 = lists:keydelete(WorkRef, 1, WorkList),
             maps:put(CallPid, {SrvId, CallId, WorkList2}, Calls);
         error ->
-            lager:warning("Receiving sync_work_received for unknown work"),
+            ?LOG_WARNING("Receiving sync_work_received for unknown work"),
             Calls
     end,
     {noreply, State#state{calls=Calls2}};
 
 handle_cast(Msg, State) ->
-    lager:error("Module ~p received unexpected event: ~p", [?MODULE, Msg]),
+    ?LOG_ERROR("Module ~p received unexpected event: ~p", [?MODULE, Msg]),
     {noreply, State}.
 
 
@@ -190,15 +188,15 @@ handle_info({'DOWN', _MRef, process, Pid, _Reason}=Info, #state{calls=Calls}=Sta
             State3 = resend_worklist(SrvId, CallId, lists:reverse(WorkList), State2),
             {noreply, State3};
         error ->
-            lager:error("NKLOG PP ~p ~p", [Pid, Calls]),
+            ?LOG_ERROR("NKLOG PP ~p ~p", [Pid, Calls]),
 
 
-            lager:warning("Module ~p received unexpected info: ~p", [?MODULE, Info]),
+            ?LOG_WARNING("Module ~p received unexpected info: ~p", [?MODULE, Info]),
             {noreply, State}
     end;
 
 handle_info(Info, State) -> 
-    lager:warning("Module ~p received unexpected info: ~p", [?MODULE, Info]),
+    ?LOG_WARNING("Module ~p received unexpected info: ~p", [?MODULE, Info]),
     {noreply, State}.
 
 
@@ -258,7 +256,7 @@ do_send_work_sync(SrvId, CallId, CallPid, Work, From, #state{calls=Calls}=State)
         {ok, {SrvId, CallId, WorkList0}} ->
             WorkList0;
         {ok, {PkgId2, CallId, WorkList0}} ->
-            ?LLOG(warning, "invalid stored work piece: ~p", [{SrvId, PkgId2}]),
+            ?LOG(warning, "invalid stored work piece: ~p", [{SrvId, PkgId2}]),
             WorkList0;
         error ->
             []
@@ -305,7 +303,7 @@ resend_worklist(_PkgId, _CallId, [], State) ->
 resend_worklist(SrvId, CallId, [{_Ref, From, Work}|Rest], State) ->
     case send_work_sync(SrvId, CallId, Work, none, From, State) of
         {ok, State1} -> 
-            ?LLOG(notice, "resending work ~p from ~p", [work_id(Work), From]),
+            ?LOG(notice, "resending work ~p from ~p", [work_id(Work), From]),
             resend_worklist(SrvId, CallId, Rest, State1);
         {error, Error} ->
             case From of

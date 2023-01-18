@@ -139,7 +139,7 @@ init([SrvId, CallId]) ->
     Debug = lists:member(call, DebugList),
     erlang:put(nksip_debug, Debug),
     erlang:start_timer(2000 * TransTime, self(), check_call),
-    ?CALL_DEBUG("started (~p)", [self()], Call),
+    ?CALL_DEBUG("started (~p)", [self()]),
     {ok, Call}.
 
 
@@ -152,7 +152,7 @@ handle_call(get_data, _From, Call) ->
     {reply, {Trans, Forks, Dialogs}, Call};
  
 handle_call(Msg, _From, Call) ->
-    lager:error("Module ~p received unexpected sync event: ~p", [?MODULE, Msg]),
+    ?LOG_ERROR("Module ~p received unexpected sync event: ~p", [?MODULE, Msg]),
     {noreply, Call}.
 
 
@@ -171,7 +171,7 @@ handle_cast(stop, Call) ->
     {stop, normal, Call};
 
 handle_cast(Msg, Call) ->
-    lager:error("Module ~p received unexpected event: ~p", [?MODULE, Msg]),
+    ?LOG_ERROR("Module ~p received unexpected event: ~p", [?MODULE, Msg]),
     {noreply, Call}.
 
 
@@ -189,11 +189,11 @@ handle_info({timeout, Ref, Type}, Call) ->
     next(nksip_call_worker:timeout(Type, Ref, Call));
 
 handle_info({'DOWN', Ref, process, _Pid, _Reason}, #call{srv_ref =Ref}=Call) ->
-    ?CALL_DEBUG("service stopped, stopping call", [], Call),
+    ?CALL_DEBUG("service stopped, stopping call", []),
     {stop, normal, Call};
 
 handle_info(Info, Call) ->
-    lager:warning("Module ~p received unexpected info: ~p", [?MODULE, Info]),
+    ?LOG_WARNING("Module ~p received unexpected info: ~p", [?MODULE, Info]),
     {noreply, Call}.
 
 
@@ -209,9 +209,9 @@ code_change(_OldVsn, Call, _Extra) ->
 -spec terminate(term(), call()) ->
     ok.
 
-terminate(_Reason, #call{srv_id=_SrvId, call_id =_CallId}=Call) ->
+terminate(_Reason, #call{srv_id=_SrvId, call_id =_CallId}) ->
     %ets:delete(nksip_ets, {SrvId, CallId}),
-    ?CALL_DEBUG("stopped", [], Call).
+    ?CALL_DEBUG("stopped", []).
 
 
 
@@ -236,7 +236,7 @@ next(#call{hibernate=Hibernate}=Call) ->
         false ->
             {noreply, Call};
         _ ->
-            ?CALL_DEBUG("hibernating: ~p", [Hibernate], Call),
+            ?CALL_DEBUG("hibernating: ~p", [Hibernate]),
             {noreply, Call#call{hibernate=false}, hibernate}
     end.
 

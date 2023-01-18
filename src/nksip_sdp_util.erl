@@ -23,6 +23,7 @@
 -author('Carlos Gonzalez <carlosj.gf@gmail.com>').
 
 -include("nksip.hrl").
+-include_lib("kernel/include/logger.hrl").
 
 -export([add_candidates/2, extract_candidates/1]).
 -export([extract_codec_map/1, insert_codec_map/2]).
@@ -97,7 +98,7 @@ add_candidates([#sdp_m{attributes=Attrs}=Media|Rest], Index, Candidates, Acc) ->
                     Data = binary:split(FRest, <<" ">>, [global]),
                     [{<<"candidate">>, Data}|FAcc];
                 _ ->
-                    lager:error("L: ~p", [Line]),
+                    ?LOG_ERROR("L: ~p", [Line]),
                     FAcc
             end
         end,

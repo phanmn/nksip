@@ -28,7 +28,7 @@
 
 -include("nksip.hrl").
 -include("nksip_call.hrl").
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include_lib("nkpacket/include/nkpacket.hrl").
 -include_lib("nkserver/include/nkserver.hrl").
 
@@ -168,19 +168,19 @@ make_listen_transps(SrvId, [Conn|Rest], Acc) ->
 
 
 %% @private
-insert_listeners(SrvId, SpecList, Service) ->
+insert_listeners(SrvId, SpecList, _Service) ->
 	case nkserver_workers_sup:update_child_multi(SrvId, SpecList, #{}) of
 		ok ->
-			?SRV_LOG(info, "listeners started", [], Service),
+			?I("listeners started", []),
 			ok;
 		not_updated ->
-			?SRV_LOG(debug, "listeners didn't upgrade", [], Service),
+			?D("listeners didn't upgrade", []),
 			ok;
 		upgraded ->
-			?SRV_LOG(info, "listeners upgraded", [], Service),
+			?I("listeners upgraded", []),
 			ok;
 		{error, Error} ->
-			?SRV_LOG(notice, "listeners start/update error: ~p", [Error], Service),
+			?N("listeners start/update error: ~p", [Error]),
 			{error, Error}
 	end.
 

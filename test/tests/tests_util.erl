@@ -22,7 +22,7 @@
 
 -module(tests_util).
 
--export([start_nksip/0, start_debug/3, empty/0, wait/2, log/0, log/1]).
+-export([start_nksip/0, start_debug/3, empty/0, wait/2]).
 -export([get_ref/0, save_ref/1, update_ref/3, send_ref/2, dialog_update/2, session_update/2]).
 
 -define(LOG_LEVEL, notice).    % debug, info, notice, warning, error
@@ -34,8 +34,6 @@
 -endif.
 
 start_nksip() ->
-    application:ensure_all_started(lager),
-    log(),
     nksip_app:start().
 
 
@@ -82,7 +80,7 @@ wait(Ref, List) ->
                 true -> 
                     wait(Ref, List -- [Term]);
                 false -> 
-                    lager:warning("Timer Test Wait unexpected term: ~p", [Term]),
+                    ?LOG_WARNING("Timer Test Wait unexpected term: ~p", [Term]),
                     wait(Ref, List)
                     % {error, {unexpected_term, Term, List}}
             end
@@ -91,13 +89,6 @@ wait(Ref, List) ->
             % io:format("------- WAIT TIMEOUT ~w\n", [List]),
             {error, {wait_timeout, List}}
     end.
-
-
-log() ->
-    log(?LOG_LEVEL).
-
-log(Level) -> 
-    lager:set_loglevel(lager_console_backend, Level).
 
 
 get_ref() ->
@@ -130,10 +121,8 @@ send_ref(Msg, Req) ->
     Dialogs = nkserver:get(PkgId, dialogs, []),
     case lists:keyfind(DialogId, 1, Dialogs) of
         {DialogId, Ref, Pid}=_D -> 
-            % lager:warning("FOUND ~p, ~p", [PkgId, _D]),
             Pid ! {Ref, {PkgId, Msg}};
         false ->
-            % lager:warning("NOT FOUND: ~p", [PkgId]),
             ok
     end.
 

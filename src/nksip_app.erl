@@ -29,6 +29,7 @@
 -export([profile_output/0]).
 
 -include("nksip.hrl").
+-include_lib("kernel/include/logger.hrl").
 
 -compile({no_auto_import, [get/1, put/2]}).
 
@@ -81,10 +82,10 @@ start(_Type, _Args) ->
             {ok, Pid} = nksip_sup:start_link(),
             put(current_cseq, nksip_util:initial_cseq()-?MINUS_CSEQ),
             {ok, Vsn} = application:get_key(nksip, vsn),
-            lager:info("NkSIP v~s has started", [Vsn]),
+            ?LOG_INFO("NkSIP v~s has started", [Vsn]),
             {ok, Pid};
         {error, Error} ->
-            lager:error("Error parsing config: ~p", [Error]),
+            ?LOG_ERROR("Error parsing config: ~p", [Error]),
             error(Error)
     end.
 

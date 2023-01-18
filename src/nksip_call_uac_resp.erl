@@ -84,7 +84,7 @@ response(Resp, UAC, Call) ->
         _ -> 
             ?CALL_DEBUG("UAC ~p ~p (~p) ~s received ~p",
                         [TransId, Method, Status, 
-                         if NoDialog -> "(no dialog) "; true -> "" end, Code1], Call)
+                         if NoDialog -> "(no dialog) "; true -> "" end, Code1])
     end,
     IsProxy = case From of
         {fork, _} -> true;
@@ -210,7 +210,7 @@ response_status(invite_accepted, Resp, UAC, Call) ->
     #trans{id=_TransId, code=_Code, status=_Status, to_tags=ToTags} = UAC,
     case ToTags of
         [ToTag|_] ->
-            ?CALL_DEBUG("UAC ~p (~p) received ~p retransmission", [_TransId, _Status, _Code], Call),
+            ?CALL_DEBUG("UAC ~p (~p) received ~p retransmission", [_TransId, _Status, _Code]),
             Call;
         _ ->
             do_received_hangup(Resp, UAC, Call)
@@ -226,7 +226,7 @@ response_status(invite_completed, Resp, UAC, Call) ->
                     send_ack(UAC, Call);
                 _ ->
                     ?CALL_LOG(info, "UAC ~p (invite_completed) ignoring new ~p response "
-                               "(previous was ~p)", [_TransId, RespCode, Code], Call)
+                               "(previous was ~p)", [_TransId, RespCode, Code])
             end,
             Call;
         _ ->  
@@ -281,11 +281,11 @@ response_status(completed, Resp, UAC, Call) ->
     case ToTags of
         [ToTag|_] ->
             ?CALL_LOG(info, "UAC ~p ~p (completed) received ~p retransmission",
-                       [_TransId, _Method, _Code], Call),
+                       [_TransId, _Method, _Code]),
             Call;
         _ ->
             ?CALL_LOG(info, "UAC ~p ~p (completed) received new ~p response",
-                       [_TransId, _Method, _Code], Call),
+                       [_TransId, _Method, _Code]),
             UAC1 = case lists:member(ToTag, ToTags) of
                 true ->
                     UAC;
@@ -312,7 +312,7 @@ do_received_hangup(Resp, UAC, Call) ->
     case Code < 300 of
         true ->
             ?CALL_LOG(info, "UAC ~p (~p) sending ACK and BYE to secondary response "
-                       "(dialog ~s)", [_TransId, _Status, _DialogId], Call),
+                       "(dialog ~s)", [_TransId, _Status, _DialogId]),
             spawn(
                 fun() ->
                     Handle = nksip_dialog_lib:get_handle(Resp),
@@ -323,16 +323,16 @@ do_received_hangup(Resp, UAC, Call) ->
                                     ok;
                                 _ByeErr ->
                                     ?CALL_LOG(notice, "UAC ~p could not send BYE: ~p",
-                                                 [_TransId, _ByeErr], Call)
+                                                 [_TransId, _ByeErr])
                             end;
                         _AckErr ->
                             ?CALL_LOG(notice, "UAC ~p could not send ACK: ~p",
-                                         [_TransId, _AckErr], Call)
+                                         [_TransId, _AckErr])
                     end
                 end);
         false ->       
             ?CALL_LOG(info, "UAC ~p (~p) received new ~p response",
-                        [_TransId, _Status, Code], Call)
+                        [_TransId, _Status, Code])
     end,
     update(UAC1, Call).
 
@@ -341,13 +341,13 @@ do_received_hangup(Resp, UAC, Call) ->
 -spec send_ack(nksip_call:trans(), nksip_call:call()) ->
     ok.
 
-send_ack(#trans{request=Req, id=_TransId}, Call) ->
+send_ack(#trans{request=Req, id=_TransId}, _Call) ->
     Ack = nksip_call_uac_make:make_ack(Req),
     case nksip_call_uac_transp:resend_request(Ack, []) of
         {ok, _} -> 
             ok;
         {error, _} -> 
-            ?CALL_LOG(notice, "UAC ~p could not send non-2xx ACK", [_TransId], Call)
+            ?CALL_LOG(notice, "UAC ~p could not send non-2xx ACK", [_TransId])
     end.
 
 
@@ -360,7 +360,7 @@ send_2xx_ack(DialogId, Call) ->
         {ok, Call1} ->
             Call1;
         {error, _Error} ->
-            ?CALL_LOG(warning, "Could not generate 2xx ACK: ~p", [_Error], Call),
+            ?CALL_LOG(warning, "Could not generate 2xx ACK: ~p", [_Error]),
             Call
     end.
 

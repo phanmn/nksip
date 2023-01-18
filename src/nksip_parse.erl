@@ -30,7 +30,7 @@
 -module(nksip_parse).
 -author('Carlos Gonzalez <carlosj.gf@gmail.com>').
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include_lib("nkpacket/include/nkpacket.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
@@ -435,7 +435,7 @@ parse_sipmsg(SipMsg, Headers) ->
     end,
     Contacts = case nklib_parse:uris(proplists:get_all_values(<<"contact">>, Hds2)) of
         error ->
-            lager:warning("C: ~p", [Hds2]),
+            ?LOG_WARNING("C: ~p", [Hds2]),
             throw({invalid, <<"Contact">>});
         Contacts0 ->
             Contacts0

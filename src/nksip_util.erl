@@ -27,7 +27,7 @@
 -export([get_connected/2, get_connected/5, is_local/2, send/4]).
 -export([print_all/0, user_callback/3]).
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include_lib("nkpacket/include/nkpacket.hrl").
 -include_lib("nkserver/include/nkserver.hrl").
 -include("nksip.hrl").
@@ -182,7 +182,6 @@ send(SrvId, Spec, Msg, Opts) when is_list(Spec) ->
         ws_proto => sip,
         debug => erlang:get(nksip_debug)
     },
-    % lager:error("NKLOG SIP SEND ~p ~p ~p", [Spec, Msg, Opts4]),
     case nkpacket:send(Spec, Msg, Opts4) of
         {ok, _Pid, Msg1} ->
             {ok, Msg1};

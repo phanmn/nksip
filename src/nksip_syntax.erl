@@ -26,7 +26,7 @@
 -export([default_allow/0, default_supported/0]).
 -export([make_config/1]).
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 

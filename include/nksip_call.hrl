@@ -27,38 +27,9 @@
 -include_lib("nklib/include/nklib.hrl").
 
 
--define(CALL_DEBUG(Txt, Args),
-    case erlang:get(nksip_debug) of
-        true -> ?CALL_LOG(debug, Txt, Args);
-        _ -> ok
-    end).
+-define(CALL_DEBUG(Txt, Args), ?D(Txt, Args)).
 
-
--define(CALL_DEBUG(Txt, Args, Call),
-    case erlang:get(nksip_debug) of
-        true -> ?CALL_LOG(debug, Txt, Args, Call);
-        _ -> ok
-    end).
-
-
--define(CALL_LOG(Type, Txt, Args),
-    lager:Type("NkSIP CALL " ++ Txt, Args)).
-
-
--define(CALL_LOG(Type, Txt, Args, Call),
-    lager:Type(
-        [
-            {package, Call#call.srv_id},
-            {call_id, Call#call.call_id}
-        ],
-        "NKSIP CALL '~s' (~s) " ++ Txt,
-        [
-            Call#call.call_id,
-            Call#call.srv_id |
-            Args
-        ]
-    )).
-
+-define(CALL_LOG(Type, Txt, Args), ?LOG(Type, "NkSIP CALL " ++ Txt, Args)).
 
 -type prack() :: {
     RSeq::nksip:cseq(), 

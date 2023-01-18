@@ -44,7 +44,7 @@ send(#trans{method='ACK'}=UAC, Call) ->
         {ok, SentReq} ->
             sent_request(SentReq, UAC, Call);
         {error, Error} ->
-            ?CALL_DEBUG("UAC ~p error sending 'ACK' request: ~p", [_TransId, Error], Call),
+            ?CALL_DEBUG("UAC ~p error sending 'ACK' request: ~p", [_TransId, Error]),
             UAC1 = UAC#trans{status=finished},
             Call1 = update(UAC1, Call),
             nksip_call_uac_reply:reply({error, Error}, UAC1, Call1)
@@ -81,13 +81,13 @@ send(UAC, Call) ->
                     sent_request(SentReq, UAC, Call);
                 {error, Error} ->
                     ?CALL_DEBUG("UAC ~p error sending ~p request: ~p",
-                                [_TransId, Method, Error], Call),
+                                [_TransId, Method, Error]),
                     UAC1 = UAC#trans{status=finished},
                     Call1 = update(UAC1, Call),
                     nksip_call_uac_reply:reply({error, Error}, UAC1, Call1)
             end;
         {error, Error} ->
-            ?CALL_LOG(info, "UAC ~p dialog error: ~p", [_TransId, Error], Call),
+            ?CALL_LOG(info, "UAC ~p dialog error: ~p", [_TransId, Error]),
             UAC1 = UAC#trans{status=finished},
             Call1 = update(UAC1, Call),
             nksip_call_uac_reply:reply({error, Error}, UAC1, Call1)
@@ -100,7 +100,7 @@ send(UAC, Call) ->
 
 sent_request(#sipmsg{class={req, 'ACK'}}=Req, UAC, Call) ->
     #trans{id=_TransId, opts=Opts} = UAC,
-    ?CALL_DEBUG("UAC ~p sent 'ACK' request", [_TransId], Call),
+    ?CALL_DEBUG("UAC ~p sent 'ACK' request", [_TransId]),
     UAC1 = UAC#trans{
         status = finished, 
         request = Req,
@@ -127,7 +127,7 @@ sent_request(Req, UAC, Call) ->
         from = From
     } = UAC,
     {ok, {_, Transp, _, _}} = nkpacket:get_local(NkPort),
-    ?CALL_DEBUG("UAC ~p sent ~p request", [_TransId, _Method], Call),
+    ?CALL_DEBUG("UAC ~p sent ~p request", [_TransId, _Method]),
     UAC1 = UAC#trans{
         request = Req, 
         transp = Transp,

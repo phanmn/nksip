@@ -22,7 +22,7 @@
 -module(nksip_gruu_lib).
 -author('Carlos Gonzalez <carlosj.gf@gmail.com>').
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 -include("nksip_registrar.hrl").
@@ -102,7 +102,7 @@ find(SrvId, #uri{scheme=Scheme, user=User, domain=Domain, opts=Opts}) ->
                         nklib_util:get_value(nksip_gruu_tmp_min, Meta, 0)=<Pos
                     ];
                 _ ->
-                    ?SIP_LOG(notice, "private GRUU not recognized: ~p", [User]),
+                    ?N("private GRUU not recognized: ~p", [User]),
                     nksip_registrar_lib:find(SrvId, Scheme, User, Domain)
             end;
         false ->

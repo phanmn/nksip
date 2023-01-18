@@ -27,7 +27,7 @@
 -export([get_handle/1, parse_handle/1, make_id/2, remote_id/2, change_app/2]).
 -export_type([id/0]).
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 
@@ -64,7 +64,7 @@ get_handle(<<"U_", _/binary>>=Id) ->
     make_handle(SrvId, DialogId, CallId);
 
 get_handle(_O) ->
-    lager:error("NKLOG INVALID HANDLE3: ~p", [_O]),
+    ?LOG_ERROR("NKLOG INVALID HANDLE3: ~p", [_O]),
     error(invalid_dialog).
 
 
@@ -76,12 +76,12 @@ parse_handle(<<"D_", Rest/binary>>) ->
         {SrvId, MsgId, CallId} ->
             {SrvId, MsgId, CallId};
         _O ->
-            lager:error("NKLOG INVALID HANDLE2: ~p ~p", [_O, Rest]),
+            ?LOG_ERROR("NKLOG INVALID HANDLE2: ~p ~p", [_O, Rest]),
             error(invalid_handle)
     end;
 
 parse_handle(_O) ->
-    lager:error("NKLOG INVALID HANDLE ~p", [_O]),
+    ?LOG_ERROR("NKLOG INVALID HANDLE ~p", [_O]),
     error(invalid_handle).
 
 

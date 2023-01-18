@@ -45,7 +45,7 @@ timer(Tag, TransId, #call{trans=Trans}=Call) ->
         #trans{class=uac}=UAC ->
             do_timer(Tag, UAC, Call);
         false ->
-            ?CALL_LOG(warning, "Call ignoring uac timer (~p, ~p)", [Tag, TransId], Call),
+            ?CALL_LOG(warning, "Call ignoring uac timer (~p, ~p)", [Tag, TransId]),
             Call
     end.
 
@@ -60,11 +60,11 @@ do_timer(timer_a, UAC, Call) ->
     #trans{id=_TransId, request=Req, status=_Status} = UAC,
     case nksip_call_uac_transp:resend_request(Req, []) of
         {ok, _} ->
-            ?CALL_LOG(info, "UAC ~p (~p) retransmitting 'INVITE'", [_TransId, _Status], Call),
+            ?CALL_LOG(info, "UAC ~p (~p) retransmitting 'INVITE'", [_TransId, _Status]),
             UAC1 = nksip_call_lib:retrans_timer(timer_a, UAC, Call),
             update(UAC1, Call);
         {error, _} ->
-            ?CALL_LOG(notice, "UAC ~p (~p) could not retransmit 'INVITE'", [_TransId, _Status], Call),
+            ?CALL_LOG(notice, "UAC ~p (~p) could not retransmit 'INVITE'", [_TransId, _Status]),
             Reply = {service_unavailable, <<"Resend Error">>},
             {Resp, _} = nksip_reply:reply(Req, Reply),
             nksip_call_uac:response(Resp, Call)
@@ -72,25 +72,25 @@ do_timer(timer_a, UAC, Call) ->
 
 % INVITE timeout
 do_timer(timer_b, #trans{id=_TransId, request=Req, status=_Status}, Call) ->
-    ?CALL_LOG(notice, "UAC ~p 'INVITE' (~p) timeout (timer B) fired", [_TransId, _Status], Call),
+    ?CALL_LOG(notice, "UAC ~p 'INVITE' (~p) timeout (timer B) fired", [_TransId, _Status]),
     {Resp, _} = nksip_reply:reply(Req, {timeout, <<"Timer B Timeout">>}),
     nksip_call_uac:response(Resp, Call);
 
 % INVITE after provisional
 do_timer(timer_c, #trans{id=_TransId, request=Req}, Call) ->
-    ?CALL_LOG(notice, "UAC ~p 'INVITE' timer C Fired", [_TransId], Call),
+    ?CALL_LOG(notice, "UAC ~p 'INVITE' timer C Fired", [_TransId]),
     {Resp, _} = nksip_reply:reply(Req, {timeout, <<"Timer C Timeout">>}),
     nksip_call_uac:response(Resp, Call);
 
 % Finished in INVITE completed
 do_timer(timer_d, #trans{id=_TransId, status=_Status}=UAC, Call) ->
-    ?CALL_DEBUG("UAC ~p 'INVITE' (~p) yimer D fired", [_TransId, _Status], Call),
+    ?CALL_DEBUG("UAC ~p 'INVITE' (~p) yimer D fired", [_TransId, _Status]),
     UAC1 = UAC#trans{status=finished, timeout_timer=undefined},
     update(UAC1, Call);
 
 % INVITE accepted finished
 do_timer(timer_m,  #trans{id=_TransId, status=_Status}=UAC, Call) ->
-    ?CALL_DEBUG("UAC ~p 'INVITE' (~p) timer M fired", [_TransId, _Status], Call),
+    ?CALL_DEBUG("UAC ~p 'INVITE' (~p) timer M fired", [_TransId, _Status]),
     UAC1 = UAC#trans{status=finished, timeout_timer=undefined},
     update(UAC1, Call);
 
@@ -99,11 +99,11 @@ do_timer(timer_e, UAC, Call) ->
     #trans{id=_TransId, status=_Status, method=_Method, request=Req} = UAC,
     case nksip_call_uac_transp:resend_request(Req, []) of
         {ok, _} ->
-            ?CALL_LOG(info, "UAC ~p (~p) retransmitting ~p", [_TransId, _Status, _Method], Call),
+            ?CALL_LOG(info, "UAC ~p (~p) retransmitting ~p", [_TransId, _Status, _Method]),
             UAC1 = nksip_call_lib:retrans_timer(timer_e, UAC, Call),
             update(UAC1, Call);
         {error, _} ->
-            ?CALL_LOG(notice, "UAC ~p (~p) could not retransmit ~p", [_TransId, _Status, _Method], Call),
+            ?CALL_LOG(notice, "UAC ~p (~p) could not retransmit ~p", [_TransId, _Status, _Method]),
             Msg = {service_unavailable, <<"Resend Error">>},
             {Resp, _} = nksip_reply:reply(Req, Msg),
             nksip_call_uac:response(Resp, Call)
@@ -111,13 +111,13 @@ do_timer(timer_e, UAC, Call) ->
 
 % No INVITE timeout
 do_timer(timer_f, #trans{id=_TransId, status=_Status, method=_Method, request=Req}, Call) ->
-    ?CALL_LOG(notice, "UAC ~p ~p (~p) timeout (timer F) fired", [_TransId, _Method, _Status], Call),
+    ?CALL_LOG(notice, "UAC ~p ~p (~p) timeout (timer F) fired", [_TransId, _Method, _Status]),
     {Resp, _} = nksip_reply:reply(Req, {timeout, <<"Timer F Timeout">>}),
     nksip_call_uac:response(Resp, Call);
 
 % No INVITE completed finished
 do_timer(timer_k,  #trans{id=_TransId, status=_Status, method=_Method}=UAC, Call) ->
-    ?CALL_DEBUG("UAC ~p ~p (~p) timer K fired", [_TransId, _Method, _Status], Call),
+    ?CALL_DEBUG("UAC ~p ~p (~p) timer K fired", [_TransId, _Method, _Status]),
     UAC1 = UAC#trans{status=finished, timeout_timer=undefined},
     update(UAC1, Call);
 
@@ -126,11 +126,11 @@ do_timer(expire, #trans{id=_TransId, status=Status}=UAC, Call) ->
     if
         Status==invite_calling; Status==invite_proceeding ->
             ?CALL_DEBUG("UAC ~p 'INVITE' (~p) timer Expire fired, sending CANCEL",
-                        [_TransId, Status], Call),
+                        [_TransId, Status]),
             UAC2 = UAC1#trans{status=invite_proceeding},
             nksip_call_uac:cancel(UAC2, [], update(UAC2, Call));
         true ->
-            ?CALL_DEBUG("UAC ~p 'INVITE' (~p) timer Expire fired", [_TransId, Status], Call),
+            ?CALL_DEBUG("UAC ~p 'INVITE' (~p) timer Expire fired", [_TransId, Status]),
             update(UAC1, Call)
     end.
 

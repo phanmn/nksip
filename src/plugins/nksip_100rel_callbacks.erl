@@ -75,7 +75,7 @@ nksip_uac_pre_response(Resp, UAC, Call) ->
     case nksip_100rel:is_prack_retrans(Resp, UAC) of
         true ->
             ?CALL_LOG(info, "UAC received retransmission of reliable provisional "
-                       "response", [], Call),
+                       "response", []),
             {ok, Call};
         false ->
             continue
@@ -201,18 +201,18 @@ nksip_uas_timer(nksip_100rel_prack_retrans, #trans{id=_Id, response=Resp}=UAS, C
     UAS2 = case nksip_call_uas_transp:resend_response(Resp, []) of
         {ok, _} ->
             ?CALL_LOG(info, "UAS ~p retransmitting 'INVITE' ~p reliable response",
-                       [_Id, _Code], Call),
+                       [_Id, _Code]),
             nksip_100rel:retrans_timer(UAS, Call);
         {error, _} -> 
             ?CALL_LOG(notice, "UAS ~p could not retransmit 'INVITE' ~p reliable response",
-                         [_Id, _Code], Call),
+                         [_Id, _Code]),
             UAS1 = UAS#trans{status=finished},
             nksip_call_lib:timeout_timer(cancel, UAS1, Call)
     end,
     {ok, nksip_call_lib:update(UAS2, Call)};
 
 nksip_uas_timer(nksip_100rel_prack_timeout, #trans{id=_Id, method=_Method}=UAS, Call) ->
-    ?CALL_LOG(notice, "UAS ~p ~p reliable provisional response timeout", [_Id, _Method], Call),
+    ?CALL_LOG(notice, "UAS ~p ~p reliable provisional response timeout", [_Id, _Method]),
     Reply = {internal_error, <<"Reliable Provisional Response Timeout">>},
     {ok, nksip_call_uas:do_reply(Reply, UAS, Call)};
 

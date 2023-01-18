@@ -476,7 +476,6 @@ multiple_200() ->
 
     [R1, R2, R3]= nksip_dialog:get_all(fork_test_serverR, CallId1),
 
-    % lager:notice("R: ~p, ~p, ~p, ~p", [R1, R2, R3, Dlg_C1_1]),
 
     Dlg_C1_1_SR = nksip_dialog_lib:change_app(Dlg_C1_1, fork_test_serverR),
     true = lists:member(Dlg_C1_1_SR, [R1, R2, R3]),

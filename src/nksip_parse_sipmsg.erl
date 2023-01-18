@@ -51,7 +51,6 @@ parse(Bin) ->
         {ok, Class, Headers, Rest3}
     catch
         throw:{line, _Line} -> 
-            % lager:error("LINE: ~p", [_Line]),
             error
     end.
 

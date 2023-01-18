@@ -120,13 +120,13 @@ update(New, Call) ->
     NewTrans = case NewStatus of
         finished ->
             ?CALL_DEBUG("~s ~p ~p (~p) removed",
-                        [Class, TransId, New#trans.method, OldStatus], Call),
+                        [Class, TransId, New#trans.method, OldStatus]),
             Rest;
         _ when NewStatus==OldStatus -> 
             [New|Rest];
         _ -> 
             ?CALL_DEBUG("~s ~p ~p ~p -> ~p",
-                        [Class, TransId, New#trans.method, OldStatus, NewStatus], Call),
+                        [Class, TransId, New#trans.method, OldStatus, NewStatus]),
             [New|Rest]
     end,
     NewHibernate = if
@@ -155,9 +155,8 @@ update_auth(DialogId, SipMsg, #call{auths=AuthList}=Call) ->
                 true ->
                     Call;
                 false -> 
-                    %lager:error("NKLOG UPDATED AUTH ~p", [{DialogId, Transp, Ip, Port}]),
                     ?CALL_DEBUG("added cached auth for dialog ~s (~p:~p:~p)",
-                                [DialogId, Transp, Ip, Port], Call),
+                                [DialogId, Transp, Ip, Port]),
                     Call#call{auths=[{DialogId, Transp, Ip, Port}|AuthList]}
             end;
         _ ->
@@ -175,16 +174,15 @@ check_auth(#sipmsg{dialog_id = <<>>}, _Call) ->
 check_auth(#sipmsg{dialog_id=DialogId, nkport=NkPort}, Call) when is_tuple(NkPort)->
     {ok, {_, Transp, Ip, Port}} = nkpacket:get_remote(NkPort),
     #call{auths=AuthList} = Call,
-    % lager:error("NKLOG CHECK AUTH (~p) ~p IN ~p", [SrvId, {DialogId, Transp, Ip, Port}, AuthList]),
     case lists:member({DialogId, Transp, Ip, Port}, AuthList) of
         true ->
             ?CALL_DEBUG("Origin ~p:~p:~p is in dialog ~s authorized list",
-                        [Transp, Ip, Port, DialogId], Call),
+                        [Transp, Ip, Port, DialogId]),
             true;
         false ->
             ?CALL_DEBUG("Origin ~p:~p:~p is NOT in dialog ~s "
                         "authorized list (~p)", 
-                        [Transp, Ip, Port, DialogId, [{O, I, P} || {D, O, I, P}<-AuthList, D==DialogId]], Call),
+                        [Transp, Ip, Port, DialogId, [{O, I, P} || {D, O, I, P}<-AuthList, D==DialogId]]),
             false
     end;
 
@@ -275,14 +273,14 @@ expire_timer(cancel, Trans, _Call) ->
     cancel_timer(Trans#trans.expire_timer),
     Trans#trans{expire_timer=undefined};
 
-expire_timer(expire, Trans, Call) ->
+expire_timer(expire, Trans, _Call) ->
     #trans{class=Class, request=Req, opts=Opts} = Trans,
     cancel_timer(Trans#trans.expire_timer),
     Timer = case Req#sipmsg.expires of
         Expires when is_integer(Expires), Expires > 0 -> 
             case lists:member(no_auto_expire, Opts) of
                 true -> 
-                    ?CALL_DEBUG("UAC ~p skipping INVITE expire", [Trans#trans.id], Call),
+                    ?CALL_DEBUG("UAC ~p skipping INVITE expire", [Trans#trans.id]),
                     undefined;
                 _ -> 
                     Time = case Class of 

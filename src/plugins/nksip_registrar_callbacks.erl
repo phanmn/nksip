@@ -22,7 +22,7 @@
 -module(nksip_registrar_callbacks).
 -author('Carlos Gonzalez <carlosj.gf@gmail.com>').
 
--include_lib("nklib/include/nklib.hrl").
+% -include_lib("nklib/include/nklib.hrl").
 -include("nksip.hrl").
 -include("nksip_call.hrl").
 -include("nksip_registrar.hrl").
